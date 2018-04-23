@@ -16,21 +16,6 @@ public class JiraTest {
 
     private JiraTest() {}
 
-    public static void main(String[] args) {
-        System.setProperty("jiraURL","https://engineering/com.frameworkium.jira.jira");
-        System.setProperty("jiraUsername","automationexecution");
-        System.setProperty("jiraPassword","po12PO!");
-        System.setProperty("resultVersion","MSS Automation");
-        System.setProperty("zapiCycleRegEx","dummy cycle");
-
-        System.out.println("----");
-        System.out.println(getFieldId("Description"));
-        Response r = changeIssueFieldValue("CSCYBER-3053", "Labels", "Ready");
-        System.out.println(r.getStatusCode());
-
-    }
-
-
     //todo this is flaky, depending on the field you may need a different json object to be parsed in or you get 400 bad request
     /** Create and send a PUT request to JIRA to change the value of a field. */
     public static Response changeIssueFieldValue(

@@ -1,7 +1,7 @@
 package com.frameworkium.jira.zapi;
 
 import io.restassured.response.Response;
-import com.frameworkium.jira.properties.Property;
+import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;

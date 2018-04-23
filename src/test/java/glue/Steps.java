@@ -40,14 +40,14 @@ public class Steps {
 
     private static final String resultVersion = "MSS Automation";
 
-//    @Before
-//    public void setupConnectionCredentials(){
-//        System.setProperty("jiraURL","");
-//        System.setProperty("jiraUsername","");
-//        System.setProperty("jiraPassword","");
-//        System.setProperty("resultVersion","");
-//        System.setProperty("zapiCycleRegEx","");
-//    }
+    @Before
+    public void setupConnectionCredentials(){
+        System.setProperty("jiraURL","https://engineering/com.frameworkium.jira.jira");
+        System.setProperty("jiraUsername","automationexecution");
+        System.setProperty("jiraPassword","po12PO!");
+        System.setProperty("resultVersion",resultVersion);
+        System.setProperty("zapiCycleRegEx","dummy cycle");
+    }
 
 
     @After("@JiraTransition")

@@ -1,6 +1,6 @@
 package com.frameworkium.jira.zapi;
 
-import com.frameworkium.jira.properties.Property;
+import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import io.restassured.path.json.JsonPath;
 

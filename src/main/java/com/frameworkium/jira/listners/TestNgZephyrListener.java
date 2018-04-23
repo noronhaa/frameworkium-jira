@@ -1,11 +1,11 @@
 package com.frameworkium.jira.listners;
 
-import com.frameworkium.jira.testng.TestIdUtils;
-import com.frameworkium.jira.properties.Property;
+import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.api.JiraTest;
 import com.frameworkium.jira.zapi.Execution;
 //import com.google.common.base.Throwables;
+import com.frameworkium.reporting.allure.TestIdUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.ITestContext;
@@ -14,8 +14,8 @@ import org.testng.ITestResult;
 
 import java.lang.reflect.Method;
 
-import static com.frameworkium.jira.properties.Property.CAPTURE_URL;
-import static com.frameworkium.jira.properties.Property.BROWSER;
+import static com.frameworkium.base.properties.Property.CAPTURE_URL;
+import static com.frameworkium.base.properties.Property.BROWSER;
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.time.DateUtils.MILLIS_PER_SECOND;
 
@@ -219,7 +219,7 @@ public class TestNgZephyrListener implements ITestListener {
      */
     private String getIssueOrTestCaseIdAnnotation(ITestResult result) {
         Method method = result.getMethod().getConstructorOrMethod().getMethod();
-        return TestIdUtils.getIssueOrTestCaseIdValue(method).orElse("");
+        return TestIdUtils.getIssueOrTmsLinkValue(method).orElse("");
     }
 
     private String getOSInfo() {
@@ -239,7 +239,6 @@ public class TestNgZephyrListener implements ITestListener {
                 .append(".")
                 .append(result.getMethod().getMethodName())
                 .append("\nDuration: ")
-//                .append(((result.getEndMillis() - result.getStartMillis()) / TimeUnit.MILLISECONDS))
                 .append(((result.getEndMillis() - result.getStartMillis()) / MILLIS_PER_SECOND))
                 .append("seconds");
 
