@@ -42,11 +42,7 @@ public class Steps {
 
     @Before
     public void setupConnectionCredentials(){
-        System.setProperty("jiraURL","https://engineering/com.frameworkium.jira.jira");
-        System.setProperty("jiraUsername","automationexecution");
-        System.setProperty("jiraPassword","po12PO!");
-        System.setProperty("resultVersion",resultVersion);
-        System.setProperty("zapiCycleRegEx","dummy cycle");
+
     }
 
 
@@ -61,6 +57,7 @@ public class Steps {
         Arrays.stream(this.tickets).forEach(t -> {
             int status = JiraConfig.getJIRARequestSpec()
                     .get(JiraConfig.JIRA_REST_PATH + "issue/" + t)
+                    .prettyPeek()
                     .thenReturn()
                     .statusCode();
 
