@@ -42,11 +42,7 @@ public class Steps {
 
     @Before
     public void setupConnectionCredentials(){
-        System.setProperty("jiraURL","https://engineering/com.frameworkium.jira.jira");
-        System.setProperty("jiraUsername","automationexecution");
-        System.setProperty("jiraPassword","po12PO!");
-        System.setProperty("resultVersion",resultVersion);
-        System.setProperty("zapiCycleRegEx","dummy cycle");
+
     }
 
 

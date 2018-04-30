@@ -14,16 +14,17 @@ public class ZephyrTestObject {
 
 
     private String key;
-    private String status;
+    private int status;
     private String comment;
     private String attachment;
 
     private final Logger logger = LogManager.getLogger();
 
 
+
     public ZephyrTestObject(String key, String status, String comment, String attachment) {
         this.key = key;
-        this.status = status;
+        this.status = convertStatus(status);
         this.comment = comment;
         this.attachment = attachment;
     }
@@ -32,7 +33,7 @@ public class ZephyrTestObject {
         return key;
     }
 
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
@@ -42,6 +43,24 @@ public class ZephyrTestObject {
 
     public String getAttachment() {
         return attachment;
+    }
+
+    private int convertStatus(String status){
+        int intStatus = 0;
+        switch (status.toLowerCase()){
+            case "pass" : intStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_PASS;
+                break;
+            case "fail" : intStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_FAIL;
+                break;
+            case "blocked" : intStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_BLOCKED;
+                break;
+        }
+
+        if (intStatus == 0){
+            throw new RuntimeException("Could not find status, accepted value are pass, fail and blocked but got:" + status);
+        }
+
+        return intStatus;
     }
 
     @Override

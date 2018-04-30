@@ -1,0 +1,7 @@
+- [DONE] check checks working
+- check we can attach attachments - file not found at the moment
+- handle no attachment
+- Check statuses and possibilities
+- make sure we can also upload an attachment
+- handle multiple attachments
+- write docs
