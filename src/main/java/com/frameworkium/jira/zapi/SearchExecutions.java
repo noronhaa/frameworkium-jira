@@ -3,6 +3,7 @@ package com.frameworkium.jira.zapi;
 import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import io.restassured.path.json.JsonPath;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class SearchExecutions {
                 .thenReturn().jsonPath();
     }
 
-    public List<Integer> getExecutionIds() {
+    public List<Integer> getExecutionIds(){
         return getIDs("executions.id");
     }
 
@@ -32,18 +33,23 @@ public class SearchExecutions {
     private List<Integer> getIDs(String path) {
         List<Integer> ids = jsonPath.getList(path);
 
-        if (Property.ZAPI_CYCLE_REGEX.isSpecified()) {
-            List<Integer> filteredIds = new ArrayList<>();
-            String jiraCycleRegEx = Property.ZAPI_CYCLE_REGEX.getValue();
-            List<String> cycleNames = jsonPath.getList("executions.cycleName");
-            for (int i = 0; i < cycleNames.size() && i < ids.size(); i++) {
-                if (cycleNames.get(i).contains(jiraCycleRegEx)) {
-                    filteredIds.add(ids.get(i));
+        try{
+            if (Property.ZAPI_CYCLE_REGEX.isSpecified()) {
+                List<Integer> filteredIds = new ArrayList<>();
+                String jiraCycleRegEx = Property.ZAPI_CYCLE_REGEX.getValue();
+                List<String> cycleNames = jsonPath.getList("executions.cycleName");
+                for (int i = 0; i < cycleNames.size() && i < ids.size(); i++) {
+                    if (cycleNames.get(i).contains(jiraCycleRegEx)) {
+                        filteredIds.add(ids.get(i));
+                    }
                 }
+                return filteredIds;
+            } else {
+                return ids;
             }
-            return filteredIds;
-        } else {
-            return ids;
+        } catch (NullPointerException e){
+            return new ArrayList<Integer>(){{add(-1);}};
         }
+
     }
 }

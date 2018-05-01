@@ -1,0 +1,4 @@
+CSCYBER-3072,Fail,updated from standalone jar,C:\development\frameworks\frameworkium\frameworkium-jira\src\test\resources\attachment.txt C:\development\frameworks\frameworkium\frameworkium-jira\src\test\resources\attachment2.txt
+CSCYBER-UNKNOWNID,Fail,updated from standalone jar,C:\development\frameworks\frameworkium\frameworkium-jira\src\test\resources\attachment.txt C:\development\frameworks\frameworkium\frameworkium-jira\src\test\resources\attachment2.txt
+CSCYBER-3209,Pass,no attachments,
+CSCYBER-3210,Fail,Wrong file name,C:\development\frameworks\frameworkium\frameworkium-jira\src\test\resources\attachmentWRONGNAME.txt

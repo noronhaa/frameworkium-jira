@@ -14,7 +14,7 @@ Feature: Set of tests checking the functionality of the zephyr API
     | blocked|
     | wip    |
 
-    @Execution
+    @Execution @attachment
   Scenario Outline: I can successfully add an attachment to a zephyr test
     Given I have zephyr details for a Test Case
     When I add '<attachments>' attachments

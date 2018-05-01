@@ -1,5 +1,6 @@
 package com.frameworkium.jira.zapi;
 
+import com.frameworkium.jira.standalone.StandaloneTool;
 import io.restassured.response.Response;
 import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
@@ -11,15 +12,14 @@ import org.json.JSONObject;
 import org.testng.ITestResult;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.frameworkium.jira.JiraConfig.REST_ZAPI_PATH;
 import static com.frameworkium.jira.JiraConfig.getJIRARequestSpec;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.normalizeSpace;
 
 public class Execution {
 
@@ -81,14 +81,18 @@ public class Execution {
      * Update issue with a comment and attachments.
      */
     public void update(int status, String comment, String... attachments) {
-        if (idList == null) {
-            return;
+
+        if (idList.get(0) == -1) {
+            logger.info("FAILED [{}] - Issue not found", issue);
+            StandaloneTool.setErrorsEncountered(true);
+            return ;
         }
+
         for (Integer executionId : idList) {
             updateStatusAndComment(executionId, status, comment);
             replaceExistingAttachments(executionId, attachments);
 
-            logger.debug("ZAPI Updater - Updated {} to status {}", issue, status);
+//            logger.debug("ZAPI Updater - Updated {} to status {}", issue, status);
         }
     }
 
@@ -110,12 +114,14 @@ public class Execution {
 
         } catch (JSONException e) {
             logger.error("Update status and comment failed", e);
+            StandaloneTool.setErrorsEncountered(true);
         }
 
         if (response !=null && response.statusCode() == 200){
-            logger.info("ZAPI Updater - Successfully updated {} status",issue);
+            logger.info("SUCCESS [{}] - updated status",issue);
         } else {
-            logger.info("ZAPI Updater - ERROR: failed to update {} status",issue);
+            logger.info("FAILED [{}] failed to update status",issue);
+            StandaloneTool.setErrorsEncountered(true);
         }
 
         return response;
@@ -146,33 +152,44 @@ public class Execution {
         return responses;
     }
 
-    private List<Response> addAttachments(Integer executionId, String... attachments) {
+    private void addAttachments(Integer executionId, String... attachments) {
 
         String path = REST_ZAPI_PATH
                 + "attachment?entityType=EXECUTION&entityId=" + executionId;
 
-        ArrayList<Response> responses = new ArrayList<>();
+        Map<String,Integer> uploadResult = new HashMap<>();
 
         Arrays.stream(attachments)
-                .filter(Objects::nonNull)
+                .filter(a -> !a.isEmpty())
                 .map(File::new)
-                .forEach(attachment -> responses.add(
-                            getJIRARequestSpec()
-                                .header("X-Atlassian-Token", "nocheck")
-                                .multiPart(attachment)
-                                .when()
-                                .post(path)));
+                .map(f -> {
+                    if (!f.exists()){
+                        logger.info("FAILED [{}] attachment file not found: {}",issue,f.getPath());
+                        StandaloneTool.setErrorsEncountered(true);
+                        return null;
+                    } else{
+                        return f;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .forEach(attachment -> uploadResult.put(attachment.getPath(),
+                    getJIRARequestSpec()
+                            .header("X-Atlassian-Token", "nocheck")
+                            .multiPart(attachment)
+                            .when()
+                            .post(path)
+                            .thenReturn()
+                            .statusCode())
+        );
 
-        int successfulResponses = responses.stream().filter(r -> r.statusCode() == 200).collect(Collectors.toList()).size();
-
-        if (successfulResponses == attachments.length){
-            logger.info("ZAPI Updater - Successfully added attachment(s) for {}",issue);
-        } else {
-            logger.info("ZAPI Updater - ERROR: failed to added attachment(s) for {}",issue);
-        }
-
-        return responses;
-
+        uploadResult.forEach( (attachment, status) -> {
+            if (status == 200) {
+                logger.info("SUCCESS [{}] Successfully added attachment: {}",issue,attachment);
+            } else {
+                logger.info("FAILED [{}] Failed to added attachment: {}",issue, attachment);
+                StandaloneTool.setErrorsEncountered(true);
+            }
+        });
 
     }
 }
