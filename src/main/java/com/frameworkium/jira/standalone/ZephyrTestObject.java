@@ -3,6 +3,7 @@ package com.frameworkium.jira.standalone;
 import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.zapi.Execution;
 import io.restassured.response.Response;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +17,7 @@ public class ZephyrTestObject {
     private String key;
     private int status;
     private String comment;
-    private String attachment;
+    private String[] attachment;
 
     private final Logger logger = LogManager.getLogger();
 
@@ -26,7 +27,7 @@ public class ZephyrTestObject {
         this.key = key;
         this.status = convertStatus(status);
         this.comment = comment;
-        this.attachment = attachment;
+        this.attachment = handleMultipleAttachments(attachment);
     }
 
     public String getKey() {
@@ -41,17 +42,21 @@ public class ZephyrTestObject {
         return comment;
     }
 
-    public String getAttachment() {
+    public String[] getAttachment() {
         return attachment;
     }
 
     private int convertStatus(String status){
         int intStatus = 0;
         switch (status.toLowerCase()){
-            case "pass" : intStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_PASS;
+            case "pass" :
+            case "passed" :
+            case "passes" : intStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_PASS;
                 break;
+            case "failed" :
             case "fail" : intStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_FAIL;
                 break;
+            case "skipped" :
             case "blocked" : intStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_BLOCKED;
                 break;
         }
@@ -61,6 +66,14 @@ public class ZephyrTestObject {
         }
 
         return intStatus;
+    }
+
+    private String[] handleMultipleAttachments(String csvAttachmentField){
+        if (csvAttachmentField.isEmpty()){
+            return new String[]{""};
+        } else {
+            return StringUtils.split(csvAttachmentField);
+        }
     }
 
     @Override

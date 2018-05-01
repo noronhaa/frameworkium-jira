@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ public class StandaloneTool {
     private String splitBy = ",";
 
     public StandaloneTool(String csvFile) {
+        super();
         this.csvFile = csvFile;
     }
 
@@ -71,7 +73,7 @@ public class StandaloneTool {
      * Take the csv file and return a list of ZephyrTestObject for each line which represents a single test
      * @return
      */
-    public List<ZephyrTestObject> mapCsv(){
+    public List<ZephyrTestObject>  mapCsv(){
 
         List<ZephyrTestObject> zephyrTests = new ArrayList<ZephyrTestObject>();
         File csvFile = new File(this.csvFile);
@@ -96,19 +98,18 @@ public class StandaloneTool {
      * function to take a line of the csv and map it to a ZephyrTestObject
      */
     private Function<String, ZephyrTestObject> mapToZephyrTestObject = (line) -> {
-        String[] args = line.split(splitBy);
+        String[] args = line.split(splitBy,-1);
         return new ZephyrTestObject(args[0],args[1],args[2],args[3]);
     };
 
-    void updateTests(List<ZephyrTestObject> tests){
+    public void updateTests(List<ZephyrTestObject> tests){
         tests.forEach(t -> update(t.getKey(),t.getStatus(),t.getComment(),t.getAttachment()));
 //        new Execution(key).update(status,comment,attachment);
     }
 
-    private void update(String k, int st, String comment, String attch){
-        System.out.println(String.format("updating: %s %s %s %s",k,st,comment,attch));
+    private void update(String k, int st, String comment, String[] attch){
+        System.out.println(String.format("updating: %s %s %s %s",k,st,comment, Arrays.toString(attch)));
         new Execution(k).update(st,comment,attch);
-
     }
 
 

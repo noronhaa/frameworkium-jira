@@ -1,7 +1,7 @@
 - [DONE] check checks working
-- check we can attach attachments - file not found at the moment
-- handle no attachment
+- check we can attach attachments [zapi]- file not found at the moment
+- [DONE] handle no attachment
 - Check statuses and possibilities
-- make sure we can also upload an attachment
-- handle multiple attachments
+- [DONE] handle multiple attachments in csv
+- [DONE] implement logging output
 - write docs

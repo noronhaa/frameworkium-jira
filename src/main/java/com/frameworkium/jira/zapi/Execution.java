@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.frameworkium.jira.JiraConfig.REST_ZAPI_PATH;
 import static com.frameworkium.jira.JiraConfig.getJIRARequestSpec;
@@ -111,6 +112,12 @@ public class Execution {
             logger.error("Update status and comment failed", e);
         }
 
+        if (response !=null && response.statusCode() == 200){
+            logger.info("ZAPI Updater - Successfully updated {} status",issue);
+        } else {
+            logger.info("ZAPI Updater - ERROR: failed to update {} status",issue);
+        }
+
         return response;
     }
 
@@ -156,6 +163,16 @@ public class Execution {
                                 .when()
                                 .post(path)));
 
+        int successfulResponses = responses.stream().filter(r -> r.statusCode() == 200).collect(Collectors.toList()).size();
+
+        if (successfulResponses == attachments.length){
+            logger.info("ZAPI Updater - Successfully added attachment(s) for {}",issue);
+        } else {
+            logger.info("ZAPI Updater - ERROR: failed to added attachment(s) for {}",issue);
+        }
+
         return responses;
+
+
     }
 }
