@@ -27,8 +27,8 @@ public class StandaloneTool {
     public static void main(String[] args) {
 //        String[] testArgs = {"src/test/resources/csv/realdata.csv",
 //                "https://engineering/jira",
-//                "automationexecution",
-//                "po12PO!",
+//                "",
+//                "",
 //                "MSS Automation",
 //                "dummy cycle"};
 
