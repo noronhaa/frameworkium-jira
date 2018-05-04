@@ -1,2 +1,2 @@
-com.frameworkium.jira.listners.MethodInterceptor
-com.frameworkium.jira.listners.TestNgZephyrListener
+com.frameworkium.jira.listeners.MethodInterceptor
+com.frameworkium.jira.listeners.TestNgZephyrListener

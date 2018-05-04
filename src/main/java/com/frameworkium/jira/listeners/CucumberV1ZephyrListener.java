@@ -1,4 +1,4 @@
-package com.frameworkium.jira.listners;
+package com.frameworkium.jira.listeners;
 
 import cucumber.runtime.CucumberException;
 import gherkin.formatter.Formatter;
@@ -49,7 +49,6 @@ public class CucumberV1ZephyrListener implements Formatter, Reporter {
             updateTCMStatus(getTestCaseId(scenario), ZAPI_STATUS_WIP, "");
         }
     }
-
 
     private List<String> getTestCaseId(Scenario scenario) {
         return retrieveTagStream(scenario.getTags(), "TestCaseId")

@@ -42,7 +42,12 @@ public class Steps {
 
     @Before
     public void setupConnectionCredentials(){
-
+        System.out.println("before");
+        System.setProperty("jiraURL","https://engineering/jira");
+        System.setProperty("jiraUsername","automationexecution");
+        System.setProperty("jiraPassword","po12PO!");
+        System.setProperty("resultVersion",resultVersion);
+        System.setProperty("zapiCycleRegEx","dummy cycle");
     }
 
 

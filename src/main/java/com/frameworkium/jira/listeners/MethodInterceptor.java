@@ -1,4 +1,4 @@
-package com.frameworkium.jira.listners;
+package com.frameworkium.jira.listeners;
 
 import com.frameworkium.jira.api.SearchIssues;
 import com.frameworkium.reporting.allure.TestIdUtils;

@@ -1,4 +1,4 @@
-CSCYBER-1,Pass,,path/to/att path/to/attch2
+CSCYBER-1,Pass,updated by frameworkium-zephyr tool,path/to/att
 CSCYBER-2,Fail,"comment2","attachment2"
 CSCYBER-3,Blocked,"comment3","attachment3"
 CSCYBER-4,Blocked,"comment4","attachment4"
