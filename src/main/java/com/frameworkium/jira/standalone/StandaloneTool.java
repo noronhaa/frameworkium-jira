@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import com.frameworkium.jira.JiraConfig;
@@ -25,14 +26,15 @@ public class StandaloneTool {
 
 
     public static void main(String[] args) {
-//        String[] testArgs = {"src/test/resources/csv/realdata.csv",
-//                "https://engineering/jira",
-//                "",
-//                "",
-//                "MSS Automation",
-//                "dummy cycle"};
 
-        entryPointForDebugging(args);
+        String[] testArgs = {"src/test/resources/csv/noAttachment.csv",
+                "",
+                "",
+                "",
+                "MSS Automation",
+                "dummy cycle"};
+
+        entryPointForDebugging(testArgs);
     }
 
     private static void entryPointForDebugging(String[] args){
@@ -59,29 +61,18 @@ public class StandaloneTool {
         System.setProperty("resultVersion",resultVersion);
         System.setProperty("zapiCycleRegEx",zapiCycleRegEx);
 
-//        System.out.println(System.getProperty("resultVersion"));
-//        System.out.println(System.getProperty(Property.RESULT_VERSION.getValue()));
     }
 
     /**
      * Take the csv file and return a list of ZephyrTestObject for each line which represents a single test
      */
-    void uploadResultsFromCsv(){
+    public void uploadResultsFromCsv(){
 
         logger.info("Starting Zephyr update");
 
-        File csvFile = new File(this.csvFile);
-
-        try (InputStream inputStream = new FileInputStream(csvFile);
-             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));){
-
-            br.lines().map(mapToZephyrTestObject)
-                    .collect(Collectors.toList())
-                    .forEach(test ->
-                        new Execution(test.getKey()).update(test.getStatus(), test.getComment(), test.getAttachment()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        collectTests()
+                .forEach(test ->
+                    new Execution(test.getKey()).update(test.getStatus(), test.getComment(), test.getAttachment()));
 
         logger.info("Zephyr update complete");
 
@@ -89,6 +80,25 @@ public class StandaloneTool {
             logger.info("Errors found during update");
         }
     }
+
+    public List<ZephyrTestObject> collectTests(){
+
+        File csvFile = new File(this.csvFile);
+
+        try (InputStream inputStream = new FileInputStream(csvFile);
+             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));){
+
+            return br.lines()
+                    .map(mapToZephyrTestObject)
+                    .collect(Collectors.toList());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
 
     /**
      * function to take a line of the csv and map it to a ZephyrTestObject

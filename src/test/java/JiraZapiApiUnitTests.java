@@ -10,9 +10,9 @@ import cucumber.api.testng.AbstractTestNGCucumberTests;
         plugin = {"pretty"},
         monochrome = true,
         glue = {"glue"},
-        tags = {"@all", "~@bug"})
+        tags = {"@attachment", "~@bug"})
 //        tags = "@bug")
-public class Runner extends AbstractTestNGCucumberTests {
+public class JiraZapiApiUnitTests extends AbstractTestNGCucumberTests {
 
 }
 

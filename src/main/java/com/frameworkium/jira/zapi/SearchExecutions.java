@@ -1,6 +1,6 @@
 package com.frameworkium.jira.zapi;
 
-import com.frameworkium.base.properties.Property;
+import com.frameworkium.jira.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import io.restassured.path.json.JsonPath;
 import org.apache.commons.lang3.ObjectUtils;
@@ -33,7 +33,6 @@ public class SearchExecutions {
     private List<Integer> getIDs(String path) {
         List<Integer> ids = jsonPath.getList(path);
 
-        try{
             if (Property.ZAPI_CYCLE_REGEX.isSpecified()) {
                 List<Integer> filteredIds = new ArrayList<>();
                 String jiraCycleRegEx = Property.ZAPI_CYCLE_REGEX.getValue();
@@ -47,9 +46,5 @@ public class SearchExecutions {
             } else {
                 return ids;
             }
-        } catch (NullPointerException e){
-            return new ArrayList<Integer>(){{add(-1);}};
-        }
-
     }
 }

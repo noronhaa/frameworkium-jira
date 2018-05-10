@@ -2,7 +2,7 @@ package com.frameworkium.jira.zapi;
 
 import com.frameworkium.jira.standalone.StandaloneTool;
 import io.restassured.response.Response;
-import com.frameworkium.base.properties.Property;
+import com.frameworkium.jira.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -14,12 +14,10 @@ import org.testng.ITestResult;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.frameworkium.jira.JiraConfig.REST_ZAPI_PATH;
 import static com.frameworkium.jira.JiraConfig.getJIRARequestSpec;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.normalizeSpace;
 
 public class Execution {
 
@@ -82,7 +80,7 @@ public class Execution {
      */
     public void update(int status, String comment, String... attachments) {
 
-        if (idList.get(0) == -1) {
+        if (idList.size() == 0) {
             logger.info("FAILED [{}] - Issue not found", issue);
             StandaloneTool.setErrorsEncountered(true);
             return ;
@@ -152,12 +150,12 @@ public class Execution {
         return responses;
     }
 
-    private void addAttachments(Integer executionId, String... attachments) {
+    private List<Response> addAttachments(Integer executionId, String... attachments) {
 
         String path = REST_ZAPI_PATH
                 + "attachment?entityType=EXECUTION&entityId=" + executionId;
 
-        Map<String,Integer> uploadResult = new HashMap<>();
+        Map<String,Response> uploadResult = new HashMap<>();
 
         Arrays.stream(attachments)
                 .filter(a -> !a.isEmpty())
@@ -178,18 +176,18 @@ public class Execution {
                             .multiPart(attachment)
                             .when()
                             .post(path)
-                            .thenReturn()
-                            .statusCode())
-        );
+        ));
 
-        uploadResult.forEach( (attachment, status) -> {
-            if (status == 200) {
+        uploadResult.forEach( (attachment, response) -> {
+            if (response.getStatusCode() == 200) {
                 logger.info("SUCCESS [{}] Successfully added attachment: {}",issue,attachment);
             } else {
                 logger.info("FAILED [{}] Failed to added attachment: {}",issue, attachment);
                 StandaloneTool.setErrorsEncountered(true);
             }
         });
+
+        return new ArrayList<>(uploadResult.values());
 
     }
 }
