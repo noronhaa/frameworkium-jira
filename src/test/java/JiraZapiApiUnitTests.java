@@ -6,11 +6,11 @@ import cucumber.api.testng.AbstractTestNGCucumberTests;
 
 @Test
 @CucumberOptions(
-        features = {"src/test/resources/"},
+        features = {"src/test/resources/features"},
         plugin = {"pretty"},
         monochrome = true,
         glue = {"glue"},
-        tags = {"@attachment", "~@bug"})
+        tags = {"~@wip", "~@bug"})
 //        tags = "@bug")
 public class JiraZapiApiUnitTests extends AbstractTestNGCucumberTests {
 
