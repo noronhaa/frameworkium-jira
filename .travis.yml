@@ -1,0 +1,22 @@
+language: java
+jdk: oraclejdk8
+
+# docker, see: https://docs.travis-ci.com/user/reference/overview/
+sudo: false
+dist: trusty
+
+install: true # disable default mvn install
+
+#notifications:
+#  slack: qaengineering:eTRqy0JhQOUtKHNO8mKLc8NC
+
+env:
+  global:
+    - SUT_NAME="frameworkium-jira"
+    # override Travis default to give browsers more room
+    - _JAVA_OPTIONS="-Xmx1024m -Xms128m"
+
+
+script:
+  # Download deps, compile and run checkstyle
+  - mvn clean install --show-version -DskipTests=true -Dmaven.javadoc.skip=true
