@@ -36,11 +36,11 @@ frameworkium-reporting is built using the following technologies
 - TestNG
 - Cucumber-JVM
 
-If you have a Java project with TestNG and/or Cucumber-JVM which has access to Jira/Zephyr then use frameworkium-jir
+If you have a Java project with TestNG and/or Cucumber-JVM which has access to Jira/Zephyr then use frameworkium-jira
  as a dependency in your project, otherwise use the [standalone tool](#standalone-tool)
 
 ### How does frameworkium-jira work?
-We interact with Jira and Zephyr by usijng the Jira and Zephyr APIs, we build up functionality to:
+We interact with Jira and Zephyr by using the Jira and Zephyr APIs, we build up functionality to:
 
 ##### Jira
 
@@ -103,7 +103,7 @@ The most common use case is updating Zephyr test cases in which the following ar
 `resultVersion` and `zapiCycleRegEx`
 
 
-### Standalone tool
+## Standalone tool
 Ths Standalone tool allows you to update your Zephyr tests as a separate process independent of your test execution
 and has been build for a few use cases:
 - You don't have direct access to Jira/Zephyr and may need to update tests separately or at a later time
@@ -113,10 +113,10 @@ and has been build for a few use cases:
 This tool will allow you to run the upload process as a separate process by running frameworkium-jira as a Jar
 
 
-#### How does Standalone tool work?
+### How does Standalone tool work?
 We package frameworkium-jira into a Jar file that can be executed standalone. the Jar will take in the required parameters
-on the CLI and will also take in a **CSV** file containing test details and results. There are many different output formats from
-tests and so you will need to transform your output format into a csv to be read by the tool. We are happy to add these transformation
+on the CLI and will also take in a [**CSV**](#csv-format) file containing test details and results. There are many different output formats from
+different test tools so you will need to transform your output format into a csv to be read by the tool. We are happy to add these transformation
 scripts to the codebase if you wish to contribute
 
 The standalone tool does not have the full functionality of frameworkiuum-jira and does the following
@@ -124,15 +124,27 @@ The standalone tool does not have the full functionality of frameworkiuum-jira a
 - Leave a comment on the execution of a Zephyr Test
 - Remove and add attachments on the execution of a Zephyr Test
 
-##### CSV format
+#### Getting started with the Standalone tool
+1. clone the frameworkium-jira repository: `git clone https://github.com/Frameworkium/frameworkium-jira.git`
+2. cd into base directory: `cd frameworkium-jira`
+3. package frameworkium-jira into a Jar: `mvn package -DskipTests` (tests are for development use)
+4. get the jar file for use, will be built at `frameworkium-jira/target/frameworkium-jira-<VERSION>.jar`
+5. have a valid [csv](#csv-format) ready for use
+6. run Jar in a place you have access to Jira/Zephyr
+7. run Jar with parameters in the following order
+`java -jar frameworkium-jira-<VERSION>.jar path/to/csvfile.csv <jiraURL> <jiraUsername> <jiraPassword> <jira fix version> <zephyr test cycle name(regex)>`
+
+ 
+
+#### CSV format
 The csv should have each test on a separate line with no header. Each line should consist of, in order
 
 Order on csv line | Description | Values
 -------- | ----------- | ------
-1 | Jira/Zephyr ID | eg `TP-12345` 
-2 | pass/fail status, can be any case | `pass` `passes` `passed` `fails` `fail` `failed` 
-3 | comment (optional) | `comment here` `"comment with double quotes"` `"comment with comma, and double quotes"` 
-4 | path to attachment file/s (Optional), can have multiple separated by a space | `a/b/pic1.txt a/b/pic2.txt` `path/to/singleAttachment.png`
+1 | Jira/Zephyr ID of test to update| eg `TP-12345` 
+2 | pass/fail status, can be any case, to update | `pass` `passes` `passed` `fails` `fail` `failed` 
+3 | comment (optional) to leave on the Test execution| `comment here` `"comment with double quotes"` `"comment with comma, and double quotes"` 
+4 | path to attachment file/s (Optional) (can have multiple separated by a space) to upload to the execution of the Test | `a/b/pic1.txt a/b/pic2.txt` `path/to/singleAttachment.png`
 
 Example of valid lines:
 
@@ -147,14 +159,3 @@ TP-6,fail,,"path/to/attachment3"
 ```
 
 
-#### Getting started with the Standalone tool
-1. clone the frameworkium-jira repository: `git clone https://github.com/Frameworkium/frameworkium-jira.git`
-2. cd into base directory: `cd frameworkium-jira`
-3. package frameworkium-jira into a Jar: `mvn package -DskipTests` (tests are for development use)
-4. get the jar file for use, will be built at `frameworkium-jira/target/frameworkium-jira-<VERSION>.jar`
-5. have a valid [csv](#csv-format) ready for use
-6. run Jar in a place you have access to Jira/Zephyr
-7. run Jar with parameters in the following order
-`java -jar frameworkium-jira-<VERSION>.jar path/to/csvfile.csv <jiraURL> <jiraUsername> <jiraPassword> <jira fix version> <zephyr test cycle name(regex)>`
-
- 
