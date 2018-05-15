@@ -99,19 +99,62 @@ Property | Description | Values
 `resultVersion`| The 'Version' to mark the test execution against in Zephyr for JIRA (requires ZAPI) | e.g. `App v1.1.2`
 `zapiCycleRegEx`| If the Zephyr test cycle name contains this string test results will be logged against the matching cycles. | e.g. `firefox` or `my-special-cycle`
 
-The most common usecase is updating Zephyr test cases in which the following are required `jiraURL`, `jiraUsername`, `jiraPassword`
+The most common use case is updating Zephyr test cases in which the following are required `jiraURL`, `jiraUsername`, `jiraPassword`
 `resultVersion` and `zapiCycleRegEx`
 
 
 ### Standalone tool
-//todo
+Ths Standalone tool allows you to update your Zephyr tests as a separate process independent of your test execution
+and has been build for a few use cases:
+- You don't have direct access to Jira/Zephyr and may need to update tests separately or at a later time
+- Your automation tests are not written in Java so can't make use of having frameworkium-jira as a dependency
+- You don't use TestNG or Cucumber so cannot make use of the listeners in frameworkium-jira to automatically update tests
+
+This tool will allow you to run the upload process as a separate process by running frameworkium-jira as a Jar
 
 
-## Docs WIP
-use the standalone version of this tool to update zephyr tests with results from a csv
+#### How does Standalone tool work?
+We package frameworkium-jira into a Jar file that can be executed standalone. the Jar will take in the required parameters
+on the CLI and will also take in a **CSV** file containing test details and results. There are many different output formats from
+tests and so you will need to transform your output format into a csv to be read by the tool. We are happy to add these transformation
+scripts to the codebase if you wish to contribute
 
-csv format (eachline) `<Issue Key>, <Pass/Passed/Fail/Failed>, <optional comment>, <optional attachment path>`
-csv example line: `CSCYBER-1,Pass,updated by frameworkium-zephyr tool,path/to/attachment`
+The standalone tool does not have the full functionality of frameworkiuum-jira and does the following
+- Update Status of a Zephyr Test
+- Leave a comment on the execution of a Zephyr Test
+- Remove and add attachments on the execution of a Zephyr Test
 
-Package jar: `mvn package` jar will be created in target dir
-run jar: `java -jar <jarname> <csv file path> <jiraURL> <jiraUsername> <jiraPassword> <jira fix version> <zephyr test cycle name(regex)>`
+##### CSV format
+The csv should have each test on a separate line with no header. Each line should consist of, in order
+
+Order on csv line | Description | Values
+-------- | ----------- | ------
+1 | Jira/Zephyr ID | eg `TP-12345` 
+2 | pass/fail status, can be any case | `pass` `passes` `passed` `fails` `fail` `failed` 
+3 | comment (optional) | `comment here` `"comment with double quotes"` `"comment with comma, and double quotes"` 
+4 | path to attachment file/s (Optional), can have multiple separated by a space | `a/b/pic1.txt a/b/pic2.txt` `path/to/singleAttachment.png`
+
+Example of valid lines:
+
+```
+TP-1,Pass,"comment1","path/to/attachment"
+TP-2,pass,comment2,
+TP-2,PASSED,another comment here,
+TP-3,Failed,,path/to/attachment3 path/to/attch3.1
+TP-4,Fails,,
+TP-5,Fails,"comment with a comma, needs double quotes", a/b/screenshot.png
+TP-6,fail,,"path/to/attachment3"
+```
+
+
+#### Getting started with the Standalone tool
+1. clone the frameworkium-jira repository: `git clone https://github.com/Frameworkium/frameworkium-jira.git`
+2. cd into base directory: `cd frameworkium-jira`
+3. package frameworkium-jira into a Jar: `mvn package -DskipTests` (tests are for development use)
+4. get the jar file for use, will be built at `frameworkium-jira/target/frameworkium-jira-<VERSION>.jar`
+5. have a valid [csv](#csv-format) ready for use
+6. run Jar in a place you have access to Jira/Zephyr
+7. run Jar with parameters in the following order
+`java -jar frameworkium-jira-<VERSION>.jar path/to/csvfile.csv <jiraURL> <jiraUsername> <jiraPassword> <jira fix version> <zephyr test cycle name(regex)>`
+
+ 

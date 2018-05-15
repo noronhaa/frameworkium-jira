@@ -1,5 +1,6 @@
 package com.frameworkium.jira.standalone;
 
+import com.frameworkium.jira.exceptions.CsvException;
 import com.frameworkium.jira.zapi.Execution;
 import io.restassured.response.Response;
 import org.apache.logging.log4j.LogManager;
@@ -105,8 +106,68 @@ public class StandaloneTool {
      */
     private Function<String, ZephyrTestObject> mapToZephyrTestObject = (line) -> {
         String[] args = line.split(COMMA,-1);
-        return new ZephyrTestObject(args[0],args[1],args[2],args[3]);
+        int commas = (int) line.chars().filter(ch -> ch == ',').count();
+        if (commas < 4){
+            //there is no extra comma in the comment section so no need to handle
+           return new ZephyrTestObject(args[0],args[1],args[2],args[3]);
+        } else {
+            //contains a comma in the comment section so we need to handle this
+            String id = args[0];
+            String passStatus = args[1];
+            line = line.substring(id.length() + passStatus.length());
+            String[] commentAndAttachment = handleCommaInComment(line);
+
+            return new ZephyrTestObject(id,passStatus,commentAndAttachment[0],commentAndAttachment[1]);
+        }
     };
+
+    private String[] handleCommaInComment(String line){
+        char doubleQuote = '\"';
+        char comma =',';
+
+        int startQuoteIndex = -1;
+        int endQuoteIndex = -1;
+        int doubleQuoteCount = 0;
+        int lastComma = -1;
+
+        char[] charArray = line.toCharArray();
+
+        for (int i = 0; i < charArray.length; i++) {
+            if (charArray[i] == doubleQuote) {
+                if (startQuoteIndex == -1) {
+                    startQuoteIndex = i;
+                } else if (endQuoteIndex == -1) {
+                    endQuoteIndex = i;
+                }
+                doubleQuoteCount++;
+            } else if (charArray[i] == comma) {
+                lastComma = i;
+            }
+
+        }
+
+        if (doubleQuoteCount != 2) {
+            logger.info("Invalid Comment, should contain 0 or 2 double quotes, skipping csv row");
+            throw new CsvException(String.format("Found %s double quotes. Should be 0 or 2 double quotes and only in the " +
+                    "comment section of the CSV",doubleQuoteCount));
+        }
+
+        String comment = line.substring(startQuoteIndex +1,endQuoteIndex);
+        String attachments = line.substring(lastComma +1);
+
+        // check we are not missing last actual comma before attachments in CSV
+        if (lastComma < endQuoteIndex){
+            logger.info("Missing comma after comment in csv");
+            throw new ArrayIndexOutOfBoundsException();
+        }
+
+        return new String[]{comment,attachments};
+
+    }
+
+
+
+
 
 
     /**

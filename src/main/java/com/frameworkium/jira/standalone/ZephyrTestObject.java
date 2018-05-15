@@ -54,6 +54,7 @@ public class ZephyrTestObject {
             case "passes" : intStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_PASS;
                 break;
             case "failed" :
+            case "fails" :
             case "fail" : intStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_FAIL;
                 break;
             case "skipped" :
