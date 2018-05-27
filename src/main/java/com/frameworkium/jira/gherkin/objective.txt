@@ -1,0 +1,25 @@
+End Goal:
+
+
+- Check Test exists in Zephyr
+
+- NO?
+- add new test to zephyr
+- Update Sceanrio with Zephyr ID
+
+- YES?
+- update BDD test in Zephyr
+
+
+
+Check test exists in Zephyr
+--------------------------
+1 Read feature file, breaking down into separate scenarios
+2 Check tags for the scenario match a Zephyr tag
+3 Query Zephyr to see if test exists
+
+Update Sceanrio with Zephyr ID
+-------------------------------
+read file line by line
+find line of scenario title
+rebuild line before by printing line + ID
