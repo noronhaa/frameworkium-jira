@@ -1,6 +1,5 @@
 package com.frameworkium.jira.gherkin;
 
-//import com.frameworkium.jira.FileUtils;
 import gherkin.AstBuilder;
 import gherkin.Parser;
 import gherkin.ast.GherkinDocument;
@@ -9,23 +8,20 @@ import gherkin.pickles.Compiler;
 import gherkin.pickles.PickleStep;
 import gherkin.pickles.PickleTag;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+/**
+ * Class to parse a feature and sync all data with Zephyr, the feature is the source of truth
+ * - Check test is in zephyr by looking for tag
+ * - Add new test to zephyr if needed
+ * - Update existing zephyr test to latest version
+ */
 public class FeatureParser {
 
     private static final String ZEPHYR_TAG_PREFIX = "@TestCaseId:";
@@ -66,17 +62,18 @@ public class FeatureParser {
         return pickles;
     }
 
+    //todo update zephyr for tests that pickleHasZephyrTag == true
     public void syncWithZephyr(){
         this.pickles.stream()
                 .filter(pickle1 -> !pickleHasZephyrTag(pickle1))
                 .forEach(pickle -> {
                     String zId = addTestToZephyr(pickle);
-                    addTags(pickle.getName(), zId);
+                    addTagsToScenario(pickle.getName(), zId);
                 });
 
     }
 
-
+    //todo extra step to quer
     private boolean pickleHasZephyrTag(Pickle pickle){
         return pickle.getTags().stream()
                             .map(PickleTag::getName)
@@ -90,14 +87,10 @@ public class FeatureParser {
      */
     private Optional<String> getZephyrId(Pickle pickle){
 
+        //todo can we delete this if
         if (pickle.getTags().size() > 0){
 
-            boolean zephyrID = pickle.getTags()
-                    .stream()
-                    .map(PickleTag::getName)
-                    .anyMatch(pickleTag -> pickleTag.startsWith(ZEPHYR_TAG_PREFIX));
-
-            if (zephyrID){
+            if (pickleHasZephyrTag(pickle)){
                 return pickle.getTags()
                      .stream()
                      .map(PickleTag::getName)
@@ -115,21 +108,30 @@ public class FeatureParser {
     }
 
 
+    //todo query zephyr
     public boolean testPresentInZephyr(String ZephyrTestId){
         return RandomUtils.nextBoolean();
     }
 
+    //todo post request to zephyr
     public String addTestToZephyr(Pickle pickle){
-        String zTestDescription = pickle.getName();
-        String zTestBdd = pickle.getSteps().stream()
+        String scenarioTitle = pickle.getName();
+        String scenarioSteps = pickle.getSteps().stream()
                                     .map(PickleStep::getText)
                                     .map(step -> step + "\n")
                                     .collect(Collectors.joining(","));
 
-        System.out.println(zTestBdd);
+        System.out.println(scenarioSteps);
 
 
         return "12345";
+    }
+
+    public void updateZephyrTest(){
+        //todo put request to push/update existing source bdd into zephyr
+        //update title
+        //update bdd section
+        //possibly just reuse some of addTestToZephyr(Pickle pickle)
     }
 
     /**
@@ -142,7 +144,7 @@ public class FeatureParser {
      * @param scenarioNameToUpdate name of scenario on its own (do not add 'Scenario:')
      * @param zephyrId ID of Zephyr test
      */
-    public void addTags(String scenarioNameToUpdate, String zephyrId){
+    public void addTagsToScenario(String scenarioNameToUpdate, String zephyrId){
         String tag = ZEPHYR_TAG_PREFIX + zephyrId;
 
         //regex to match: (any number of white space)Scenario:(0 or 1 whitespace)(name of scenario)
@@ -150,6 +152,7 @@ public class FeatureParser {
         String scenarioLine = INDENTATION + SCENARIO_KEYWORD + " " + scenarioNameToUpdate;
         File file = new File(this.featurePath);
         String fileContext = null;
+
         try {
             fileContext = FileUtils.readFileToString(file);
             fileContext = fileContext.replaceAll(scenarioTitle,
