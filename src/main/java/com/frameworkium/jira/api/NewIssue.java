@@ -34,7 +34,7 @@ public class NewIssue {
         fields.put(CUSTOM_BDD_FIELD_ID, bddField);
 
         object.put("fields", fields);
-        System.out.println(object.toString(2));
+//        System.out.println(object.toString(2));
 
         return object.toString();
     }

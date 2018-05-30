@@ -12,10 +12,10 @@ public class CycleUnitTests {
     @Test
     public void canRetrieveProjectIdFromProjectKey(){
         String projectKey = "TP";
-        int expectedId = 16506;
+        String expectedId = "16506";
 
         Cycle cycle = new Cycle();
-        int actualId = cycle.getProjectIdByKey(projectKey);
+        String actualId = cycle.getProjectIdByKey(projectKey);
 
         Assert.assertEquals(actualId,expectedId);
     }
@@ -24,7 +24,7 @@ public class CycleUnitTests {
     public void canRetrieveSpecificVersionId(){
         //get all versions, iterate through results to find id of version by name
 
-        int projectId = 16506;
+        String projectId = "16506";
         String versionName = "ARGON";
         String expectedVersionId = "83930";
 
@@ -41,7 +41,7 @@ public class CycleUnitTests {
     public void canRetrieveSpecificVersionIdUsingVersionNameWIthDecimal(){
         //get all versions, iterate through results to find id of version by name
 
-        int projectId = 16506;
+        String projectId = "16506";
         String versionName = "GA 1.1 - 1.0";
         String expectedVersionId = "58758";
 

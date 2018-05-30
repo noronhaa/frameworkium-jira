@@ -1,8 +1,12 @@
 package com.frameworkium.jira.zapi.cycle;
 
 import com.frameworkium.jira.JiraConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Cycle {
+
+    private static final Logger logger = LogManager.getLogger();
 
     private static final String CYCLE_ENDPOINT = "cycle";
     private static final String APPLICATION_JSON = "application/json";
@@ -13,16 +17,21 @@ public class Cycle {
      * @param cycleEntity build request body using CycleEntity object, required fields are versionId, sprintId, projectId, name
      * @return id of newly created cycle
      */
+    //todo create new cycle IF cycle doesn't exist??
     public int createNewCycle(CycleEntity cycleEntity){
-        return JiraConfig.getJIRARequestSpec()
-                .given()
-                    .contentType(APPLICATION_JSON)
-                    .body(cycleEntity)
-                .expect()
-                    .statusCode(200)
-                .when()
-                    .post(JiraConfig.REST_ZAPI_PATH + CYCLE_ENDPOINT)
-                .thenReturn().jsonPath().getInt("id");
+        int cycleId =  JiraConfig.getJIRARequestSpec()
+                                .given()
+                                    .contentType(APPLICATION_JSON)
+                                    .body(cycleEntity)
+                                .expect()
+                                    .statusCode(200)
+                                .when()
+                                    .post(JiraConfig.REST_ZAPI_PATH + CYCLE_ENDPOINT)
+                                .thenReturn().jsonPath().getInt("id");
+
+        logger.info(String.format("Zephyr Cycle created: %s [ID:%s]",cycleEntity.getName(),cycleId));
+
+        return cycleId;
     }
 
 
@@ -47,10 +56,10 @@ public class Cycle {
      * @param projectKey key such as TP, CSCYBER
      * @return project key
      */
-    public int getProjectIdByKey(String projectKey){
+    public String getProjectIdByKey(String projectKey){
         String endpoint = JiraConfig.JIRA_REST_PATH + "project/" + projectKey;
 
-        return JiraConfig.getJIRARequestSpec()
+        int projectId = JiraConfig.getJIRARequestSpec()
                 .given()
                     .contentType(APPLICATION_JSON)
                 .expect()
@@ -58,6 +67,8 @@ public class Cycle {
                 .when()
                     .get(endpoint)
                 .andReturn().jsonPath().getInt("id");
+
+        return String.valueOf(projectId);
     }
 
 
@@ -69,8 +80,8 @@ public class Cycle {
      * @param versionName you wish to find the key if of
      * return the key of a build/fix version that we may execute a test/cycle against
      */
-    public String getVersionIdByName(int projectID, String versionName){
-        String endpoint = String.format(JiraConfig.JIRA_REST_PATH  + "project/%s/versions", String.valueOf(projectID));
+    public String getVersionIdByName(String projectID, String versionName){
+        String endpoint = String.format(JiraConfig.JIRA_REST_PATH  + "project/%s/versions", projectID);
         String jsonPathMatch = String.format("findAll { it.name == '%s' }.id[0]",versionName);
 
         return JiraConfig.getJIRARequestSpec()
@@ -98,6 +109,10 @@ public class Cycle {
                     .statusCode(200)
                 .when()
                     .post(endpoint);
+
+        logger.info(String.format("Zephyr Tests added to Cycle: %s -> %s",
+                addToCycleEntity.getIssues().toString(),
+                addToCycleEntity.getCycleId()));
     }
 
 

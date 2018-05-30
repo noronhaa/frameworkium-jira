@@ -11,7 +11,8 @@ import gherkin.pickles.Compiler;
 import gherkin.pickles.PickleStep;
 import gherkin.pickles.PickleTag;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +27,8 @@ import java.util.stream.Collectors;
  * - Update existing zephyr test to latest version
  */
 public class FeatureParser {
+    private static final Logger logger = LogManager.getLogger();
+
 
     private static final String ZEPHYR_TAG_PREFIX = "@TestCaseId:";
     private static final String SCENARIO_KEYWORD = "Scenario:";
@@ -91,7 +94,17 @@ public class FeatureParser {
         return pickle.getTags().stream()
                 .map(PickleTag::getName)
                 .filter(tag -> tag.contains(ZEPHYR_TAG_PREFIX))
+                .map(this::stripZephyrTag)
                 .anyMatch(tag -> new Issue(tag).found());
+    }
+
+    /**
+     * remove @TestCaseId: if it is present from the tag
+     * @param zephyrTag
+     * @return
+     */
+    private String stripZephyrTag(String zephyrTag){
+        return zephyrTag.replace(ZEPHYR_TAG_PREFIX, "");
     }
 
     /**
@@ -99,26 +112,16 @@ public class FeatureParser {
      * @param pickle
      * @return the stripped zephyr id if present or Optional.empty if no zephyr id was found
      */
-    private Optional<String> getZephyrId(Pickle pickle){
+    //todo unit tests
+    public Optional<String> getZephyrId(Pickle pickle){
+        Optional<String> zephyrId = pickle.getTags()
+                .stream()
+                .map(PickleTag::getName)
+                .filter(pickleTag -> pickleTag.startsWith(ZEPHYR_TAG_PREFIX))
+                .map(this::stripZephyrTag)
+                .findFirst();
 
-        //todo can we delete this 'if'
-        if (pickle.getTags().size() > 0){
-
-            if (pickleHasZephyrTag(pickle)){
-                return pickle.getTags()
-                     .stream()
-                     .map(PickleTag::getName)
-                     .filter(pickleTag -> pickleTag.startsWith(ZEPHYR_TAG_PREFIX))
-                     .map(pickleTag -> pickleTag.substring(ZEPHYR_TAG_PREFIX.length()))
-                     .findFirst();
-
-            } else {
-                return Optional.empty();
-            }
-
-        } else {
-            return Optional.empty();
-        }
+        return zephyrId;
     }
 
     /**
@@ -134,10 +137,10 @@ public class FeatureParser {
         String scenarioSteps = pickle.getSteps().stream()
                                     .map(PickleStep::getText)
                                     .map(step -> step + "\n")
-                                    .collect(Collectors.joining(","));
+                                    .collect(Collectors.joining(","))
+                                    .replace(",","");
 
-        System.out.println(scenarioSteps);
-
+//        System.out.println(scenarioSteps);
 
         NewIssue newTest = new NewIssue("TP",
                                     scenarioTitle,
@@ -154,11 +157,10 @@ public class FeatureParser {
                     .statusCode(201)
                 .when()
                     .post(endpoint)
-//                .prettyPeek()
                 .thenReturn()
                     .jsonPath().getString("key");
 
-        System.out.println(zephyrId);
+        logger.info("Zephyr Test Created: " + zephyrId);
 
         return zephyrId;
 

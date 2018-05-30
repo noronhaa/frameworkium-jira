@@ -1,8 +1,13 @@
 package glue;
 
 import com.frameworkium.jira.FileUtils;
+import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.gherkin.FeatureParser;
-import cucumber.api.PendingException;
+import com.frameworkium.jira.zapi.Execution;
+import com.frameworkium.jira.zapi.cycle.AddToCycleEntity;
+import com.frameworkium.jira.zapi.cycle.Cycle;
+import com.frameworkium.jira.zapi.cycle.CycleEntity;
+import cucumber.api.java.After;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -12,17 +17,22 @@ import org.testng.Assert;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class GherkinParserSteps {
 
     public static final String FEATURE_DIR = "src/test/resources/gherkinParser/features/";
 
     private String featurePath;
+    private int cycleId;
 
     public static void main(String[] args) {
-        Optional<String> s = Optional.empty();
-        System.out.println(s.isPresent());
+        Optional<String> s = Optional.of("aaa");
+        System.out.println(s.toString());
+        System.out.println(String.valueOf(s));
+        System.out.println(s.get());
     }
 
     /**
@@ -80,7 +90,7 @@ public class GherkinParserSteps {
     }
 
 
-    @And("^the scenario will be successfully updated and match \"([^\"]*)\"$")
+    @And("^the feature will be successfully updated and match \"([^\"]*)\"$")
     public void theScenarioWillBeSuccessfullyUpdatedAndMatch(String relPath) throws Throwable {
         String expectedPath = "src/test/resources/" + relPath;
 
@@ -91,5 +101,79 @@ public class GherkinParserSteps {
         Assert.assertEquals(actualFeature,expectedFeature);
     }
 
+
+    @Given("^I have a feature file with a mix of zephyr and non zephyr scenarios$")
+    public void iHaveAFeatureFileWithAMixOfZephyrAndNonZephyrScenarios() throws Throwable {
+        iHaveAMultipleScenariosThatDoNOTContainAZephyrTag();
+    }
+
+    @And("^I do not have a zephyr test cycle setup$")
+    public void iDoNotHaveAZephyrTestCycleSetup() throws Throwable {
+        //here for readability
+    }
+
+    @Then("^a new test in zephyr will be created for the test not in zephyr$")
+    public void aNewTestInZephyrWillBeCreatedForTheTestNotInZephyr() throws Throwable {
+       FeatureParser featureParser = new FeatureParser(featurePath);
+       featureParser.syncWithZephyr();
+    }
+
+    private String projectId;
+    private String versionId;
+
+    @And("^a new zephyr cycle will be created$")
+    public void aNewZephyrCycleWillBeCreated() throws Throwable {
+        Cycle cycle = new Cycle();
+
+        projectId = cycle.getProjectIdByKey("TP");
+        versionId = cycle.getVersionIdByName(projectId,"ARGON");
+
+        CycleEntity cycleEntity = new CycleEntity("E2E Automation Cycle",projectId,versionId);
+
+        this.cycleId = cycle.createNewCycle(cycleEntity);
+        System.out.println(String.format("[Z Cycle Id: %s]",cycleId));
+        System.out.println(String.format("[projectId Id: %s]",projectId));
+        System.out.println(String.format("[version Id: %s]",versionId));
+    }
+
+    @And("^the tests will be added to the new cycle$")
+    public void theTestsWillBeAddedToTheNewCycle() throws Throwable {
+        FeatureParser parser = new FeatureParser(featurePath);
+        List<String> zephyrIds = parser.getPickles().stream()
+                            .filter(parser::pickleHasZephyrTag)
+                            .map(parser::getZephyrId)
+                            .map(Optional::get)
+                            .collect(Collectors.toList());
+
+        AddToCycleEntity addToCycleEntity = new AddToCycleEntity(
+                String.valueOf(this.cycleId),
+                zephyrIds,
+                "1",
+                projectId,
+                Integer.valueOf(versionId));
+
+        new Cycle().addTestsToCycle(addToCycleEntity);
+    }
+
+    @And("^the tests will be updated for the execution$")
+    public void theTestsWillBeUpdatedForTheExecution() throws Throwable {
+        FeatureParser parser = new FeatureParser(featurePath);
+        parser.getPickles()
+                .stream()
+                .filter(parser::pickleHasZephyrTag)
+                .map(parser::getZephyrId)
+                .filter(Optional::isPresent)
+                .forEach(zephyrTest -> {
+                                        System.out.println("trying to update zephyr test: " + zephyrTest);
+                                        new Execution(zephyrTest.get())
+                                                .update(JiraConfig.ZapiStatus.ZAPI_STATUS_PASS, "update by automation");
+                        });
+    }
+
+//    @After
+//    public void cleanup(){
+//        new Cycle().deleteCycle(String.valueOf(cycleId));
+//
+//    }
 
 }

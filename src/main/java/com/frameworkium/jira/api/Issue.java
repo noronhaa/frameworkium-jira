@@ -19,8 +19,18 @@ public class Issue {
         this.issueKey = issue;
     }
 
+    public void delete(){
+        String endpoint = JiraConfig.JIRA_REST_PATH + "issue/" + issueKey;
+        JiraConfig.getJIRARequestSpec()
+                .expect()
+                    .statusCode(204)
+                .when()
+                    .delete(endpoint);
+    }
+
     public boolean found(){
-        String endpoint = "search?jql=issue=" + this.issueKey;
+
+        String endpoint = JiraConfig.JIRA_REST_PATH  + "search?jql=issue=" + this.issueKey;
 
         int statuscode = JiraConfig.getJIRARequestSpec()
                             .get(endpoint)

@@ -262,5 +262,8 @@ public class Steps {
     }
 
 
-
+    @When("^I 'run' the tests$")
+    public void iRunTheTests() throws Throwable {
+        System.out.println("Pretend tests are running...)");
+    }
 }

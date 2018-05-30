@@ -4,7 +4,7 @@ Feature:
   Scenario: a
     Given x
 
-    @TestCaseId:x
+    @TestCaseId:TP-12601
   Scenario: b
     Given y
 
