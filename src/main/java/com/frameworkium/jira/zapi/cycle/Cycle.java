@@ -1,8 +1,10 @@
 package com.frameworkium.jira.zapi.cycle;
 
 import com.frameworkium.jira.JiraConfig;
+import io.restassured.path.json.JsonPath;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 public class Cycle {
 
@@ -34,6 +36,29 @@ public class Cycle {
         return cycleId;
     }
 
+    public int cycleExists(String projectKey, String versionName){
+        String endpoint = JiraConfig.REST_ZAPI_PATH + CYCLE_ENDPOINT + "/cyclesByVersionsAndSprint";
+        String projectId = getProjectIdByKey(projectKey);
+
+        JSONObject object = new JSONObject();
+        object.put("expand","executionSummaries");
+        object.put("offset",0);
+        object.put("projectId",projectId);
+        object.put("versionId",getVersionIdByName(projectId, versionName));
+
+        JsonPath path = JiraConfig.getJIRARequestSpec()
+                .given()
+                    .contentType(APPLICATION_JSON)
+                    .body(object)
+                .expect()
+                    .statusCode(200)
+                .when()
+                    .post(endpoint)
+                .thenReturn().jsonPath();
+
+        //todo do something cleve with jsonpath to find cycle
+        return -1;
+    }
 
     /**
      * Delete a cycle by its cycle ID

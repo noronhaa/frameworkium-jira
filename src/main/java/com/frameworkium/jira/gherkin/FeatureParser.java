@@ -48,6 +48,9 @@ public class FeatureParser {
         pickles = parse();
     }
 
+    public FeatureParser() {
+    }
+
     public static void main(String[] args) {
 //        FeatureParser featureParser = new FeatureParser();
 //        List<Pickle> pickles = new FeatureParser().parse(
@@ -90,6 +93,19 @@ public class FeatureParser {
      * @param pickle
      * @return
      */
+    public boolean pickleHasZephyrTag(List<PickleTag> tags){
+        return tags.stream()
+                .map(PickleTag::getName)
+                .filter(tag -> tag.contains(ZEPHYR_TAG_PREFIX))
+                .map(this::stripZephyrTag)
+                .anyMatch(tag -> new Issue(tag).found());
+    }
+
+    /**
+     * Check each tag for a zephyr tag checking it contains @TestCaseId:<zephyr tag> then query zephyr to check tag exists
+     * @param pickle
+     * @return
+     */
     public boolean pickleHasZephyrTag(Pickle pickle){
         return pickle.getTags().stream()
                 .map(PickleTag::getName)
@@ -124,23 +140,30 @@ public class FeatureParser {
         return zephyrId;
     }
 
+
+    public String addTestToZephyr(Pickle pickle) {
+
+        String scenarioTitle = pickle.getName();
+        String scenarioSteps = pickle.getSteps().stream()
+                .map(PickleStep::getText)
+                .map(step -> step + "\n")
+                .collect(Collectors.joining(","))
+                .replace(",","");
+
+        return addTestToZephyr(scenarioTitle, scenarioSteps);
+    }
+
+
     /**
      * Create a new test in zephyr
      * @param pickle
      * @return Issue Id of new zephyr test
      */
-    public String addTestToZephyr(Pickle pickle){
+//    public String addTestToZephyr(Pickle pickle){
+    public String addTestToZephyr(String scenarioTitle, String scenarioSteps){
         String endpoint = JiraConfig.JIRA_REST_PATH + "issue";
 
         //TODO get the bdd out to display properly
-        String scenarioTitle = pickle.getName();
-        String scenarioSteps = pickle.getSteps().stream()
-                                    .map(PickleStep::getText)
-                                    .map(step -> step + "\n")
-                                    .collect(Collectors.joining(","))
-                                    .replace(",","");
-
-//        System.out.println(scenarioSteps);
 
         NewIssue newTest = new NewIssue("TP",
                                     scenarioTitle,
