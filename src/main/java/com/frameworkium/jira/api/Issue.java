@@ -19,6 +19,23 @@ public class Issue {
         this.issueKey = issue;
     }
 
+    public boolean found(){
+        String endpoint = "search?jql=issue=" + this.issueKey;
+
+        int statuscode = JiraConfig.getJIRARequestSpec()
+                            .get(endpoint)
+                            .statusCode();
+
+        if (statuscode == 200){
+            return true;
+        } else if (statuscode == 400){
+            return false;
+        } else {
+            throw new RuntimeException(
+                    "unexpected status code, expected 200 (found) or 400 (not found) but got " + statuscode);
+        }
+    }
+
 
     /**
      * Create and post a JSON request to JIRA to get issues.
