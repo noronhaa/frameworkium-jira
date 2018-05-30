@@ -1,6 +1,7 @@
 package com.frameworkium.jira.gherkin;
 
 import com.frameworkium.jira.JiraConfig;
+import com.frameworkium.jira.api.Issue;
 import com.frameworkium.jira.api.NewIssue;
 import gherkin.AstBuilder;
 import gherkin.Parser;
@@ -32,6 +33,11 @@ public class FeatureParser {
     private static final String INDENTATION = "  ";
 
     private String featurePath;
+
+    public List<Pickle> getPickles() {
+        return pickles;
+    }
+
     private List<Pickle> pickles;
 
     public FeatureParser(String featurePath) {
@@ -56,6 +62,7 @@ public class FeatureParser {
 
     }
 
+
     private List<Pickle> parse(){
         String feature = com.frameworkium.jira.FileUtils.readFile(this.featurePath);
         Parser<GherkinDocument> parser = new Parser<>(new AstBuilder());
@@ -70,16 +77,21 @@ public class FeatureParser {
                 .filter(pickle1 -> !pickleHasZephyrTag(pickle1))
                 .forEach(pickle -> {
                     String zId = addTestToZephyr(pickle);
-                    addTagsToScenario(pickle.getName(), zId);
+                    addTagsToScenario(pickle, zId);
                 });
 
     }
 
-    //todo extra step to quer
-    private boolean pickleHasZephyrTag(Pickle pickle){
+    /**
+     * Check each tag for a zephyr tag checking it contains @TestCaseId:<zephyr tag> then query zephyr to check tag exists
+     * @param pickle
+     * @return
+     */
+    public boolean pickleHasZephyrTag(Pickle pickle){
         return pickle.getTags().stream()
-                            .map(PickleTag::getName)
-                            .anyMatch(tag -> tag.contains(ZEPHYR_TAG_PREFIX));
+                .map(PickleTag::getName)
+                .filter(tag -> tag.contains(ZEPHYR_TAG_PREFIX))
+                .anyMatch(tag -> new Issue(tag).found());
     }
 
     /**
@@ -89,7 +101,7 @@ public class FeatureParser {
      */
     private Optional<String> getZephyrId(Pickle pickle){
 
-        //todo can we delete this if
+        //todo can we delete this 'if'
         if (pickle.getTags().size() > 0){
 
             if (pickleHasZephyrTag(pickle)){
@@ -109,13 +121,11 @@ public class FeatureParser {
         }
     }
 
-
-    //todo query zephyr
-    public boolean testPresentInZephyr(String ZephyrTestId){
-        return RandomUtils.nextBoolean();
-    }
-
-    //todo post request to zephyr
+    /**
+     * Create a new test in zephyr
+     * @param pickle
+     * @return Issue Id of new zephyr test
+     */
     public String addTestToZephyr(Pickle pickle){
         String endpoint = JiraConfig.JIRA_REST_PATH + "issue";
 
@@ -168,11 +178,12 @@ public class FeatureParser {
      * 3 - replace that line with a line with the tag followed by original scenario line
      * 4 - transform stream of strings to bytes
      * 5 - write bytes to original file (overwrite)
-     * @param scenarioNameToUpdate name of scenario on its own (do not add 'Scenario:')
+     * @param pickle aka scenario you want to update
      * @param zephyrId ID of Zephyr test
      */
-    public void addTagsToScenario(String scenarioNameToUpdate, String zephyrId){
+    public void addTagsToScenario(Pickle pickle, String zephyrId){
         String tag = ZEPHYR_TAG_PREFIX + zephyrId;
+        String scenarioNameToUpdate = pickle.getName();
 
         //regex to match: (any number of white space)Scenario:(0 or 1 whitespace)(name of scenario)
         String scenarioTitle = String.format("( *)%s( ?)%s",SCENARIO_KEYWORD, scenarioNameToUpdate);

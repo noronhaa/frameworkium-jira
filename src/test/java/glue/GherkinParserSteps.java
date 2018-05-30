@@ -2,6 +2,7 @@ package glue;
 
 import com.frameworkium.jira.FileUtils;
 import com.frameworkium.jira.gherkin.FeatureParser;
+import cucumber.api.PendingException;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -58,6 +59,19 @@ public class GherkinParserSteps {
     @When("^I parse the feature file$")
     public void iParseTheFeatureFile() throws Throwable {
         new FeatureParser(featurePath).syncWithZephyr();
+    }
+
+    @When("^I parse the feature file without connecting to zephyr$")
+    public void iParseTheFeatureFileWithoutConnectingToZephyr() throws Throwable {
+        String zId = "TP-12345";
+        FeatureParser parser = new FeatureParser(featurePath);
+
+        parser.getPickles().stream()
+                .filter(pickle1 -> !parser.pickleHasZephyrTag(pickle1))
+                .forEach(pickle -> {
+                    parser.addTagsToScenario(pickle, zId);
+                });
+
     }
 
     @Then("^a new zephyr test will be created$")

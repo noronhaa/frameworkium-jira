@@ -1,6 +1,6 @@
 Feature:
 
-    @TestCaseId:12345
+  @TestCaseId:TP-12345
   Scenario: a
     Given x
 
@@ -9,6 +9,6 @@ Feature:
     Given y
 
     @q
-    @TestCaseId:12345
+  @TestCaseId:TP-12345
   Scenario: c
     Given z

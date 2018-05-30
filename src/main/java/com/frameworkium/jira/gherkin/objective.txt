@@ -12,11 +12,11 @@ End Goal:
 
 
 
-Check test exists in Zephyr
+[DONE] Check test exists in Zephyr
 --------------------------
 1 Read feature file, breaking down into separate scenarios DONE
 2 Check tags for the scenario match a Zephyr tag DONE
-3 Query Zephyr to see if test exists TODO
+3 Query Zephyr to see if test exists
 
 [DONE] Update Scenario with Zephyr ID
 -------------------------------
@@ -25,10 +25,11 @@ find line of scenario title DONE
 rebuild line before by printing line + ID DONE
 
 
-add new test to zephyr
+[DONE] add new test to zephyr
 --------------------------
 post request
 
+//todo
 update BDD test in Zephyr
 --------------------------
 put request
