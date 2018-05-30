@@ -1,4 +1,4 @@
-package com.frameworkium.jira.zapi;
+package com.frameworkium.jira.zapi.cycle;
 
 import com.frameworkium.jira.JiraConfig;
 
@@ -64,8 +64,9 @@ public class Cycle {
 
     /**
      *
+     * Get the id of a 'version' stored in zephyr api
      * @param projectID id of your project, returned by getProjectIdByKey()
-     * @param versionName you wish to find the key of
+     * @param versionName you wish to find the key if of
      * return the key of a build/fix version that we may execute a test/cycle against
      */
     public String getVersionIdByName(int projectID, String versionName){
@@ -83,7 +84,7 @@ public class Cycle {
     }
 
     /**
-     *
+     * Add tests to a zephyr test cycle
      * @param addToCycleEntity
      */
     public void addTestsToCycle(AddToCycleEntity addToCycleEntity){

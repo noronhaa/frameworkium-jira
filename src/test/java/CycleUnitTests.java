@@ -1,12 +1,9 @@
-import com.frameworkium.jira.zapi.AddToCycleEntity;
-import com.frameworkium.jira.zapi.Cycle;
-import com.frameworkium.jira.zapi.CycleEntity;
-import io.restassured.path.json.JsonPath;
+import com.frameworkium.jira.zapi.cycle.AddToCycleEntity;
+import com.frameworkium.jira.zapi.cycle.Cycle;
+import com.frameworkium.jira.zapi.cycle.CycleEntity;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -108,9 +105,39 @@ public class CycleUnitTests {
 
     }
 
-    @Test
+    @Test(dependsOnMethods = "canAddTestsToATestCycle")
     public void canAddTestToACycleThatIsAlreadyInTheCycleWithoutError(){
-        Assert.fail();
+        List<String> issuesToAddToCycle = Collections.singletonList("TP-12601");
+        String versionId = "83930";
+        String projectId = "16506";
+
+        Cycle cycle = new Cycle();
+        int cycleId;
+
+        //create cycle
+        CycleEntity cycleEntity = new CycleEntity("Auto Test Cycle 1",projectId,versionId);
+        cycleId = cycle.createNewCycle(cycleEntity);
+
+
+        //Create addToCycleEntity
+        AddToCycleEntity addToCycleEntity = new AddToCycleEntity(
+                String.valueOf(cycleId),
+                issuesToAddToCycle,
+                "1",
+                projectId,
+                Integer.valueOf(versionId)
+        );
+
+        //add tests to cycle
+        cycle.addTestsToCycle(addToCycleEntity);
+
+        //add same test again and see what happens
+        cycle.addTestsToCycle(addToCycleEntity);
+
+        //Clean up and delete cycle
+        cycle.deleteCycle(String.valueOf(cycleId));
+
+
     }
 
 }

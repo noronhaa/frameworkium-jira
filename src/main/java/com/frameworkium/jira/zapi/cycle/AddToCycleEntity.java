@@ -1,4 +1,4 @@
-package com.frameworkium.jira.zapi;
+package com.frameworkium.jira.zapi.cycle;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
