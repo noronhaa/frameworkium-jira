@@ -75,7 +75,7 @@ public class JiraTest {
 
 
     /**
-     * Query the field id using the name of the field
+     * Query the field id using the issueType of the field
      * @param fieldName
      * @return field id
      */
@@ -116,7 +116,7 @@ public class JiraTest {
      */
     public static Response transitionIssue(String issueKey, String transitionName) {
 
-        logger.debug("Transition name: " + transitionName);
+        logger.debug("Transition issueType: " + transitionName);
         return transitionIssue(issueKey, getTransitionId(issueKey, transitionName));
     }
 

@@ -25,23 +25,6 @@ Feature: set of scenarios covering required new functionality of the frameworkiu
     And my tests will be added to the new cycle
     And the tests results within the new cycle will be updated
 
-    Scenario Outline: multiple something
-      Given I have <documents> in the ui
-      When I do something
-      Then something happens
-
-      Then I see <result>
-
-      Examples:
-        |result|
-        | 1 doc      |
-        | 2       |
-        | 100     |
-
-
-
-
-
   Scenario: User can update the BDD Gherkin tests in Zephyr in an EXISTING test cycle
     Given I have an exiting test cycle containing my tests
     And I have made a change to my BDD tests in my automation framework

@@ -14,7 +14,7 @@ Feature: checking if a bdd had a zephyr tag and adding one if needed after creat
     When I parse the feature file without connecting to zephyr
     And the feature will be successfully updated and match "gherkinParser/features/multipleScenarios1ZidExpected.feature"
 
-    @e2e
+    @e2e @wip
   Scenario: End to End run of tests using zephyt integrations and test creation
     Given I have a feature file with a mix of zephyr and non zephyr scenarios
     And I do not have a zephyr test cycle setup

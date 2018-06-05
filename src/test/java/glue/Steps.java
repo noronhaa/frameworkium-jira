@@ -83,7 +83,7 @@ public class Steps {
         String statusCode = String.valueOf(response.statusCode());
 
         Assert.assertTrue(statusCode.startsWith("2"),
-                response.statusLine());
+                response.statusLine() + "\n" + response.prettyPeek());
     }
 
     @Then("^all the responses be a 2XX$")
@@ -192,11 +192,12 @@ public class Steps {
 
 
     @When("^I add '(.*)' attachments$")
-    public void iChangeTheStatusToFailAndLeaveAttachmentsAttachment(int attachments) throws Throwable {
+    public void iChangeTheStatusToFailAndLeaveAttachmentsAttachment(String attachments) throws Throwable {
+        int attach = Integer.valueOf(attachments);
         String attachmentz[];
-        if (attachments == 1){
+        if (attach == 1){
             attachmentz = new String[]{"src/test/resources/attachment.txt"};
-        } else if (attachments == 2){
+        } else if (attach == 2){
             attachmentz = new String[]{"src/test/resources/attachment.txt", "src/test/resources/attachment2.txt"};
         } else {
             throw new RuntimeException("Haven't implemented functionality to add more that 2 attachments in this test");

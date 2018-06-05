@@ -39,7 +39,7 @@ public class GherkinUtils {
      * @return the stripped zephyr id if present or Optional.empty if no zephyr id was found
      */
     //todo unit tests
-    public Optional<String> getZephyrId(List<PickleTag> tags){
+    public Optional<String> getZephyrIdFromTags(List<PickleTag> tags){
         Optional<String> zephyrId = tags
                 .stream()
                 .map(PickleTag::getName)

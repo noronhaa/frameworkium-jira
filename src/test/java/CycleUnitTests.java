@@ -20,16 +20,18 @@ public class CycleUnitTests {
         Assert.assertEquals(actualId,expectedId);
     }
 
-    @Test
+    @Test(dependsOnMethods = "canRetrieveProjectIdFromProjectKey")
     public void canRetrieveSpecificVersionId(){
-        //get all versions, iterate through results to find id of version by name
+        //get all versions, iterate through results to find id of version by issueType
 
-        String projectId = "16506";
+        Cycle cycle = new Cycle();
+
+
+        String projectId = cycle.getProjectIdByKey("TP");
         String versionName = "ARGON";
         String expectedVersionId = "83930";
 
 
-        Cycle cycle = new Cycle();
         String actualVersionId = cycle.getVersionIdByName(projectId, versionName);
 
         Assert.assertEquals(actualVersionId, expectedVersionId);
@@ -37,16 +39,17 @@ public class CycleUnitTests {
     }
 
 
-    @Test
+    @Test(dependsOnMethods = "canRetrieveProjectIdFromProjectKey")
     public void canRetrieveSpecificVersionIdUsingVersionNameWIthDecimal(){
-        //get all versions, iterate through results to find id of version by name
+        //get all versions, iterate through results to find id of version by issueType
 
-        String projectId = "16506";
+        Cycle cycle = new Cycle();
+
+
+        String projectId = cycle.getProjectIdByKey("TP");
         String versionName = "GA 1.1 - 1.0";
         String expectedVersionId = "58758";
 
-
-        Cycle cycle = new Cycle();
         String actualVersionId = cycle.getVersionIdByName(projectId, versionName);
 
         Assert.assertEquals(actualVersionId, expectedVersionId);

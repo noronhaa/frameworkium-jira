@@ -11,8 +11,8 @@ import org.testng.ITestContext;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import static com.frameworkium.jira.properties.Property.JIRA_URL;
-import static com.frameworkium.jira.properties.Property.JQL_QUERY;
+import static com.frameworkium.base.properties.Property.JIRA_URL;
+import static com.frameworkium.base.properties.Property.JQL_QUERY;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 

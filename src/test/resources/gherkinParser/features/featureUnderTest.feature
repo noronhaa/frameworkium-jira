@@ -1,14 +1,14 @@
 Feature:
 
-    @TestCaseId:12345
+  @TestCaseId:TP-12345
   Scenario: a
     Given x
 
-    @TestCaseId:x
+    @TestCaseId:TP-12601
   Scenario: b
     Given y
 
     @q
-    @TestCaseId:12345
+  @TestCaseId:TP-12345
   Scenario: c
     Given z

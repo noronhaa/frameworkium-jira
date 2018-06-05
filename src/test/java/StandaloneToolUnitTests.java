@@ -1,4 +1,4 @@
-import com.frameworkium.jira.properties.Property;
+import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.standalone.StandaloneTool;
 import com.frameworkium.jira.standalone.ZephyrTestObject;
@@ -8,7 +8,6 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
 
 public class StandaloneToolUnitTests {

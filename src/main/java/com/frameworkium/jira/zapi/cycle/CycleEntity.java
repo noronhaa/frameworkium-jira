@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * Object for creating a test cycle, required fields are name, projectId, versionId. These are the minimum required to
+ * Object for creating a test cycle, required fields are issueType, projectId, versionId. These are the minimum required to
  * create a test cycle. All other fields are optional.
  */
 @Data

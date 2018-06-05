@@ -1,6 +1,6 @@
 package com.frameworkium.jira.listeners;
 
-import com.frameworkium.jira.properties.Property;
+import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.api.JiraTest;
 import com.frameworkium.jira.zapi.Execution;
@@ -14,8 +14,8 @@ import org.testng.ITestResult;
 
 import java.lang.reflect.Method;
 
-import static com.frameworkium.jira.properties.Property.CAPTURE_URL;
-import static com.frameworkium.jira.properties.Property.BROWSER;
+import static com.frameworkium.base.properties.Property.CAPTURE_URL;
+import static com.frameworkium.base.properties.Property.BROWSER;
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.time.DateUtils.MILLIS_PER_SECOND;
 
@@ -225,7 +225,7 @@ public class TestNgZephyrListener implements ITestListener {
     private String getOSInfo() {
         return String.format(
                 "%s - %s (%s)",
-                System.getProperty("os.name"),
+                System.getProperty("os.issueType"),
                 System.getProperty("os.version"),
                 System.getProperty("os.arch"));
     }

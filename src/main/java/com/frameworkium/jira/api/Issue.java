@@ -50,7 +50,7 @@ public class Issue {
     /**
      * Create and post a JSON request to JIRA to get issues.
      *
-     * @param type         name of issue
+     * @param type         issueType of issue
      * @param inwardIssue  inward issue key
      * @param outwardIssue outward issue key
      */

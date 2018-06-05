@@ -3,15 +3,16 @@ package glue;
 import com.frameworkium.jira.FileUtils;
 import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.gherkin.FeatureParser;
+import com.frameworkium.jira.gherkin.GherkinUtils;
 import com.frameworkium.jira.zapi.Execution;
 import com.frameworkium.jira.zapi.cycle.AddToCycleEntity;
 import com.frameworkium.jira.zapi.cycle.Cycle;
 import com.frameworkium.jira.zapi.cycle.CycleEntity;
-import cucumber.api.java.After;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import gherkin.pickles.Pickle;
 import org.testng.Assert;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class GherkinParserSteps {
 
     public static final String FEATURE_DIR = "src/test/resources/gherkinParser/features/";
+    GherkinUtils gherkinUtils = new GherkinUtils();
 
     private String featurePath;
     private int cycleId;
@@ -77,7 +79,7 @@ public class GherkinParserSteps {
         FeatureParser parser = new FeatureParser(featurePath);
 
         parser.getPickles().stream()
-                .filter(pickle1 -> !parser.pickleHasZephyrTag(pickle1))
+                .filter(pickle1 -> !gherkinUtils.pickleHasZephyrTag(pickle1.getTags()))
                 .forEach(pickle -> {
                     parser.addTagsToScenario(pickle, zId);
                 });
@@ -140,8 +142,9 @@ public class GherkinParserSteps {
     public void theTestsWillBeAddedToTheNewCycle() throws Throwable {
         FeatureParser parser = new FeatureParser(featurePath);
         List<String> zephyrIds = parser.getPickles().stream()
-                            .filter(parser::pickleHasZephyrTag)
-                            .map(parser::getZephyrId)
+                            .map(Pickle::getTags)
+                            .filter(gherkinUtils::pickleHasZephyrTag)
+                            .map(gherkinUtils::getZephyrIdFromTags)
                             .map(Optional::get)
                             .collect(Collectors.toList());
 
@@ -160,8 +163,9 @@ public class GherkinParserSteps {
         FeatureParser parser = new FeatureParser(featurePath);
         parser.getPickles()
                 .stream()
-                .filter(parser::pickleHasZephyrTag)
-                .map(parser::getZephyrId)
+                .map(Pickle::getTags)
+                .filter(gherkinUtils::pickleHasZephyrTag)
+                .map(gherkinUtils::getZephyrIdFromTags)
                 .filter(Optional::isPresent)
                 .forEach(zephyrTest -> {
                                         System.out.println("trying to update zephyr test: " + zephyrTest);

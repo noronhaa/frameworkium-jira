@@ -2,7 +2,7 @@ package com.frameworkium.jira.zapi;
 
 import com.frameworkium.jira.standalone.StandaloneTool;
 import io.restassured.response.Response;
-import com.frameworkium.jira.properties.Property;
+import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -13,7 +13,6 @@ import org.testng.ITestResult;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.frameworkium.jira.JiraConfig.REST_ZAPI_PATH;
 import static com.frameworkium.jira.JiraConfig.getJIRARequestSpec;
@@ -90,7 +89,7 @@ public class Execution {
             updateStatusAndComment(executionId, status, comment);
             replaceExistingAttachments(executionId, attachments);
 
-//            logger.debug("ZAPI Updater - Updated {} to status {}", issue, status);
+            logger.debug("ZAPI Updater - Updated {} to status {}", issue, status);
         }
     }
 

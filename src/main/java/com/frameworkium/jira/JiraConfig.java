@@ -1,6 +1,6 @@
 package com.frameworkium.jira;
 
-import com.frameworkium.jira.properties.Property;
+import com.frameworkium.base.properties.Property;
 import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.given;
