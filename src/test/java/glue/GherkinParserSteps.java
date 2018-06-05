@@ -54,7 +54,7 @@ public class GherkinParserSteps {
     }
 
     @Given("^I have a scenario that does NOT contain a zephyr tag$")
-    public void iHaveAScenarioThatDoesNOTContainAZephyrTag() throws Throwable {
+    public void iHaveAScenarioThatDoesNOTContainAZephyrTag() {
         String testFeature = "src/test/resources/gherkinParser/features/editFeature.feature";
         setupTestFeature(testFeature);
     }
@@ -69,17 +69,17 @@ public class GherkinParserSteps {
     }
 
     @When("^I parse the feature file$")
-    public void iParseTheFeatureFile() throws Throwable {
-        new FeatureParser(featurePath).syncWithZephyr();
+    public void iParseTheFeatureFile() {
+        new FeatureParser(featurePath).syncTestsWithZephyr();
     }
 
     @When("^I parse the feature file without connecting to zephyr$")
-    public void iParseTheFeatureFileWithoutConnectingToZephyr() throws Throwable {
+    public void iParseTheFeatureFileWithoutConnectingToZephyr() {
         String zId = "TP-12345";
         FeatureParser parser = new FeatureParser(featurePath);
 
         parser.getPickles().stream()
-                .filter(pickle1 -> !gherkinUtils.pickleHasZephyrTag(pickle1.getTags()))
+                .filter(pickle1 -> !GherkinUtils.pickleHasZephyrTag(pickle1.getTags()))
                 .forEach(pickle -> {
                     parser.addTagsToScenario(pickle, zId);
                 });
@@ -87,13 +87,13 @@ public class GherkinParserSteps {
     }
 
     @Then("^a new zephyr test will be created$")
-    public void aNewZephyrTestWillBeCreated() throws Throwable {
+    public void aNewZephyrTestWillBeCreated() {
         // todo when zephyr functionality implemented
     }
 
 
     @And("^the feature will be successfully updated and match \"([^\"]*)\"$")
-    public void theScenarioWillBeSuccessfullyUpdatedAndMatch(String relPath) throws Throwable {
+    public void theScenarioWillBeSuccessfullyUpdatedAndMatch(String relPath) {
         String expectedPath = "src/test/resources/" + relPath;
 
 
@@ -110,21 +110,21 @@ public class GherkinParserSteps {
     }
 
     @And("^I do not have a zephyr test cycle setup$")
-    public void iDoNotHaveAZephyrTestCycleSetup() throws Throwable {
+    public void iDoNotHaveAZephyrTestCycleSetup() {
         //here for readability
     }
 
     @Then("^a new test in zephyr will be created for the test not in zephyr$")
-    public void aNewTestInZephyrWillBeCreatedForTheTestNotInZephyr() throws Throwable {
+    public void aNewTestInZephyrWillBeCreatedForTheTestNotInZephyr() {
        FeatureParser featureParser = new FeatureParser(featurePath);
-       featureParser.syncWithZephyr();
+       featureParser.syncTestsWithZephyr();
     }
 
     private String projectId;
     private String versionId;
 
     @And("^a new zephyr cycle will be created$")
-    public void aNewZephyrCycleWillBeCreated() throws Throwable {
+    public void aNewZephyrCycleWillBeCreated() {
         Cycle cycle = new Cycle();
 
         projectId = cycle.getProjectIdByKey("TP");
@@ -139,12 +139,12 @@ public class GherkinParserSteps {
     }
 
     @And("^the tests will be added to the new cycle$")
-    public void theTestsWillBeAddedToTheNewCycle() throws Throwable {
+    public void theTestsWillBeAddedToTheNewCycle() {
         FeatureParser parser = new FeatureParser(featurePath);
         List<String> zephyrIds = parser.getPickles().stream()
                             .map(Pickle::getTags)
-                            .filter(gherkinUtils::pickleHasZephyrTag)
-                            .map(gherkinUtils::getZephyrIdFromTags)
+                            .filter(GherkinUtils::pickleHasZephyrTag)
+                            .map(GherkinUtils::getZephyrIdFromTags)
                             .map(Optional::get)
                             .collect(Collectors.toList());
 
@@ -159,13 +159,13 @@ public class GherkinParserSteps {
     }
 
     @And("^the tests will be updated for the execution$")
-    public void theTestsWillBeUpdatedForTheExecution() throws Throwable {
+    public void theTestsWillBeUpdatedForTheExecution() {
         FeatureParser parser = new FeatureParser(featurePath);
         parser.getPickles()
                 .stream()
                 .map(Pickle::getTags)
-                .filter(gherkinUtils::pickleHasZephyrTag)
-                .map(gherkinUtils::getZephyrIdFromTags)
+                .filter(GherkinUtils::pickleHasZephyrTag)
+                .map(GherkinUtils::getZephyrIdFromTags)
                 .filter(Optional::isPresent)
                 .forEach(zephyrTest -> {
                                         System.out.println("trying to update zephyr test: " + zephyrTest);

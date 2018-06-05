@@ -9,6 +9,10 @@ public class JiraConfig {
 
     public static final String JIRA_REST_PATH = "/rest/api/latest/";
     public static final String REST_ZAPI_PATH = "/rest/zapi/latest/";
+    public static final String ZEPHYR_TAG_PREFIX = "@TestCaseId:";
+    public static final String NO_UPLOAD_TO_ZEPHYR = "@NoZephyr";
+
+
 
     private JiraConfig() {
         // hide default constructor for this util class

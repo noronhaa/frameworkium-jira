@@ -2,7 +2,6 @@ package com.frameworkium.jira.listeners;
 
 import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
-import com.frameworkium.jira.api.Issue;
 import com.frameworkium.jira.api.NewIssue;
 import com.frameworkium.jira.gherkin.FeatureParser;
 import com.frameworkium.jira.gherkin.GherkinUtils;
@@ -67,18 +66,7 @@ public class CukesListenerV2 implements Formatter {
         }
     };
 
-    private void handleTestSourceRead(TestSourceRead event) {
-        logger.info("TestSourceRead event | Source: ");
-        logger.info(event.source);
-        logger.info(event.uri);
 
-        FeatureParser parser = new FeatureParser(event.uri);
-        parser.syncWithZephyr();
-
-//        FeatureParser parser = new FeatureParser()
-
-
-    }
 
     @Override
     public void setEventPublisher(EventPublisher publisher) {
@@ -86,6 +74,12 @@ public class CukesListenerV2 implements Formatter {
         publisher.registerHandlerFor(TestCaseFinished.class, caseFinishedEventHandler);
         publisher.registerHandlerFor(TestRunStarted.class, testRunStartedHandler);
         publisher.registerHandlerFor(TestSourceRead.class, testSourceReadHandler);
+    }
+
+
+    private void handleTestSourceRead(TestSourceRead event) {
+        logger.info("TestSourceRead event");
+        new FeatureParser(event.uri).syncTestsWithZephyr();
     }
 
     /**
@@ -108,21 +102,9 @@ public class CukesListenerV2 implements Formatter {
     private void handleTestCaseStarted(TestCaseStarted event) {
         logger.info("TestCaseStarted event");
         List<PickleTag> tags = event.testCase.getTags();
-        Optional<String> zephyrTag = gherkinUtils.getZephyrIdFromTags(tags);
+        Optional<String> zephyrTag = GherkinUtils.getZephyrIdFromTags(tags);
 
-
-        boolean createZephyrTest = false;
-
-        if (zephyrTag.isPresent()){
-            boolean validZephyrTest = new Issue(zephyrTag.get()).found();
-            if (!validZephyrTest){
-                createZephyrTest = true;
-            }
-        } else {
-            createZephyrTest = true;
-        }
-
-        if (createZephyrTest) {
+        if (!zephyrTag.isPresent()) {
             zephyrTag = Optional.of(createZephyrTest(event));
         }
 
@@ -147,7 +129,7 @@ public class CukesListenerV2 implements Formatter {
 
         String comment = UPDATE_COMMENT + "\n" + event.result.getErrorMessage();
 
-        gherkinUtils.getZephyrIdFromTags(tags)
+        GherkinUtils.getZephyrIdFromTags(tags)
                 .ifPresent(issueId -> new Execution(issueId).update(
                         getUpdateStatus(event), comment)
                 );
@@ -196,6 +178,7 @@ public class CukesListenerV2 implements Formatter {
     }
 
     private String createZephyrTest(TestCaseStarted event){
+        String projectKey = Property.JIRA_PROJECT_KEY.getValue();
         String name= event.testCase.getName();
         String steps = event.testCase.getTestSteps()
                 .stream()
@@ -204,10 +187,7 @@ public class CukesListenerV2 implements Formatter {
                 .map(step -> step + "\n")
                 .collect(Collectors.joining(","))
                 .replace(",","");
-        String projectKey = Property.JIRA_PROJECT_KEY.getValue();
-        String zephyrTestId = new NewIssue(projectKey,name,CREATE_COMMENT,NewIssue.IssueType.TEST,steps).create();
-        //todo find original scenario and add tag
-        return zephyrTestId;
+        return new NewIssue(projectKey,name,CREATE_COMMENT,NewIssue.IssueType.TEST,steps).create();
     }
 
 
