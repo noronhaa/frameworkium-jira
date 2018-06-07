@@ -25,12 +25,11 @@ public class CukesListenerV2 implements Formatter {
 
     private static final Logger logger = LogManager.getLogger();
 
-    private static final String ZEPHYR_TAG_PREFIX = "@TestCaseId:";
-    private GherkinUtils gherkinUtils = new GherkinUtils();
     private int zephyrCycleId;
     private Cycle zephyrCycle;
     private String projectId;
     private String versionId;
+    private String zephyrId;
 
 
     public static final String UPDATE_COMMENT = "Updated by frameworkium-jira";
@@ -38,35 +37,10 @@ public class CukesListenerV2 implements Formatter {
 
 //todo properties validation?
 
-    private EventHandler<TestCaseStarted> caseStartedHandler = new EventHandler<TestCaseStarted>() {
-        @Override
-        public void receive(TestCaseStarted event) {
-            handleTestCaseStarted(event);
-        }
-    };
-
-    private EventHandler<TestCaseFinished> caseFinishedEventHandler = new EventHandler<TestCaseFinished>() {
-        @Override
-        public void receive(TestCaseFinished event) {
-            handleTestCaseFinished(event);
-        }
-    };
-
-    private EventHandler<TestRunStarted> testRunStartedHandler = new EventHandler<TestRunStarted>() {
-        @Override
-        public void receive(TestRunStarted event) {
-            handleTestRunStarted(event);
-        }
-    };
-
-    private EventHandler<TestSourceRead> testSourceReadHandler = new EventHandler<TestSourceRead>() {
-        @Override
-        public void receive(TestSourceRead event) {
-            handleTestSourceRead(event);
-        }
-    };
-
-
+    private EventHandler<TestCaseStarted> caseStartedHandler = this::handleTestCaseStarted;
+    private EventHandler<TestCaseFinished> caseFinishedEventHandler = this::handleTestCaseFinished;
+    private EventHandler<TestRunStarted> testRunStartedHandler = this::handleTestRunStarted;
+    private EventHandler<TestSourceRead> testSourceReadHandler = this::handleTestSourceRead;
 
     @Override
     public void setEventPublisher(EventPublisher publisher) {
@@ -79,7 +53,8 @@ public class CukesListenerV2 implements Formatter {
 
     private void handleTestSourceRead(TestSourceRead event) {
         logger.info("TestSourceRead event");
-        new FeatureParser(event.uri).syncTestsWithZephyr();
+        //todo don't create test here? parse the uri / test source and save for later use
+//        new FeatureParser(event.uri).syncTestsWithZephyr();
     }
 
     /**
@@ -105,13 +80,17 @@ public class CukesListenerV2 implements Formatter {
         Optional<String> zephyrTag = GherkinUtils.getZephyrIdFromTags(tags);
 
         if (!zephyrTag.isPresent()) {
+            //find original scenario and change
             zephyrTag = Optional.of(createZephyrTest(event));
         }
 
         addTestToZephyrCycle(zephyrTag.get());
 
+        //set zephyr ID externally
         new Execution(zephyrTag.get()).update(
                 JiraConfig.ZapiStatus.ZAPI_STATUS_WIP, UPDATE_COMMENT);
+
+        this.zephyrId = zephyrTag.get();
 
     }
 
@@ -129,10 +108,13 @@ public class CukesListenerV2 implements Formatter {
 
         String comment = UPDATE_COMMENT + "\n" + event.result.getErrorMessage();
 
-        GherkinUtils.getZephyrIdFromTags(tags)
-                .ifPresent(issueId -> new Execution(issueId).update(
-                        getUpdateStatus(event), comment)
-                );
+//        GherkinUtils.getZephyrIdFromTags(tags)
+//                .ifPresent(issueId -> new Execution(issueId).update(
+//                        getUpdateStatus(event), comment)
+//                );
+
+        new Execution(this.zephyrId).update(
+                getUpdateStatus(event), comment);
 
     }
 
