@@ -7,7 +7,7 @@
     <groupId>com.github.frameworkium</groupId>
     <artifactId>frameworkium-jira</artifactId>
     <version>3.0-BETA5</version>
-    <packaging>pom</packaging>
+    <!--<packaging>pom</packaging>-->
     <name>frameworkium-jira</name>
     <description>
         Frameworkium project containing integration with Jira and Zephyr

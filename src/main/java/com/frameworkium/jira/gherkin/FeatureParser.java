@@ -120,5 +120,27 @@ public class FeatureParser {
 
     }
 
+    public void addTagsToScenario(String scenarioName, String zephyrId){
+        String tag = JiraConfig.ZEPHYR_TAG_PREFIX + zephyrId;
+//        String scenarioNameToUpdate = pickle.getName();
+
+        //regex to match: (any number of white space)Scenario:(0 or 1 whitespace)(issueType of scenario)
+        String scenarioTitle = String.format("( *)%s( ?)%s",SCENARIO_KEYWORD, scenarioName);
+        String scenarioLine = INDENTATION + SCENARIO_KEYWORD + " " + scenarioName;
+        File file = new File(this.featurePath);
+        String fileContext = null;
+
+        try {
+            //todo check this read method works ok
+            fileContext = com.frameworkium.jira.FileUtils.readFile(this.featurePath);
+            fileContext = fileContext.replaceAll(scenarioTitle,
+                    INDENTATION + tag + NEW_LINE + scenarioLine);
+            org.apache.commons.io.FileUtils.write(file, fileContext);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
 }

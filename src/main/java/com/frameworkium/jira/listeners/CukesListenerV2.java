@@ -31,31 +31,22 @@ public class CukesListenerV2 implements Formatter {
     private String versionId;
     private String zephyrId;
 
-
-    public static final String UPDATE_COMMENT = "Updated by frameworkium-jira";
-    public static final String CREATE_COMMENT = "Created by frameworkium-jira";
+    private static final String UPDATE_COMMENT = "Updated by frameworkium-jira";
+    private static final String CREATE_COMMENT = "Created by frameworkium-jira";
 
 //todo properties validation?
 
     private EventHandler<TestCaseStarted> caseStartedHandler = this::handleTestCaseStarted;
     private EventHandler<TestCaseFinished> caseFinishedEventHandler = this::handleTestCaseFinished;
     private EventHandler<TestRunStarted> testRunStartedHandler = this::handleTestRunStarted;
-    private EventHandler<TestSourceRead> testSourceReadHandler = this::handleTestSourceRead;
 
     @Override
     public void setEventPublisher(EventPublisher publisher) {
         publisher.registerHandlerFor(TestCaseStarted.class, caseStartedHandler);
         publisher.registerHandlerFor(TestCaseFinished.class, caseFinishedEventHandler);
         publisher.registerHandlerFor(TestRunStarted.class, testRunStartedHandler);
-        publisher.registerHandlerFor(TestSourceRead.class, testSourceReadHandler);
     }
 
-
-    private void handleTestSourceRead(TestSourceRead event) {
-        logger.info("TestSourceRead event");
-        //todo don't create test here? parse the uri / test source and save for later use
-//        new FeatureParser(event.uri).syncTestsWithZephyr();
-    }
 
     /**
      * When test run starts, check Zephyr cycle exists, if it doesn't, create a new cycle
@@ -80,8 +71,13 @@ public class CukesListenerV2 implements Formatter {
         Optional<String> zephyrTag = GherkinUtils.getZephyrIdFromTags(tags);
 
         if (!zephyrTag.isPresent()) {
-            //find original scenario and change
+            //create Zephyr Test case
             zephyrTag = Optional.of(createZephyrTest(event));
+
+            //find original scenario and update with new Zephyr Id
+            String uri = event.testCase.getUri();
+            String scenarioName = event.testCase.getName();
+            new FeatureParser(uri).addTagsToScenario(scenarioName, zephyrTag.get());
         }
 
         addTestToZephyrCycle(zephyrTag.get());
@@ -91,7 +87,6 @@ public class CukesListenerV2 implements Formatter {
                 JiraConfig.ZapiStatus.ZAPI_STATUS_WIP, UPDATE_COMMENT);
 
         this.zephyrId = zephyrTag.get();
-
     }
 
 
@@ -103,19 +98,16 @@ public class CukesListenerV2 implements Formatter {
      */
     private void handleTestCaseFinished(TestCaseFinished event) {
         logger.info("TestCaseFinished event");
+        String comment = UPDATE_COMMENT;
 
-        List<PickleTag> tags = event.testCase.getTags();
+        //Add stack trace of test not pass
+        if (!event.result.is(Result.Type.PASSED)){
+            comment = comment + "\n" + event.result.getErrorMessage();
+        }
 
-        String comment = UPDATE_COMMENT + "\n" + event.result.getErrorMessage();
-
-//        GherkinUtils.getZephyrIdFromTags(tags)
-//                .ifPresent(issueId -> new Execution(issueId).update(
-//                        getUpdateStatus(event), comment)
-//                );
-
+        //Update Zephyr test case
         new Execution(this.zephyrId).update(
                 getUpdateStatus(event), comment);
-
     }
 
 
