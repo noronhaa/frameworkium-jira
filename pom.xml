@@ -9,10 +9,13 @@
     <version>3.0-BETA5</version>
     <name>frameworkium-jira</name>
     <description>
-        Frameworkium project containing integration with Jira and Zephyr
+        Frameworkium project containing integration with Jira and Zephyr (via ZAPI)
     </description>
 
-
+    <properties>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -57,10 +60,8 @@
         </dependency>
         <dependency>
             <groupId>io.cucumber</groupId>
-            <!--<groupId>info.cukes</groupId>-->
             <artifactId>cucumber-java</artifactId>
             <version>3.0.0</version>
-            <!--<version>1.2.5</version>-->
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -115,10 +116,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>
                 <configuration>
-                    <!--<jdkToolchain>-->
-                        <!--<version>9</version>-->
-                    <!--</jdkToolchain>-->
-                    <!--<release>9</release>-->
                     <source>8</source>
                     <target>8</target>
                 </configuration>
@@ -136,7 +133,6 @@
                         <configuration>
                             <includes>
                                 <include>**/StandaloneToolUnitTests.java</include>
-                                <!--<include>**/*Tests.java</include>-->
                             </includes>
                             <failIfNoTests>true</failIfNoTests>
                         </configuration>
@@ -168,7 +164,6 @@
             </plugin>
         </plugins>
 
-
     </build>
 
     <repositories>
@@ -177,7 +172,5 @@
             <url>https://jitpack.io</url>
         </repository>
     </repositories>
-
-
 
 </project>

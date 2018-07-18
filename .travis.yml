@@ -7,16 +7,15 @@ dist: trusty
 
 install: true # disable default mvn install
 
-#notifications:
-#  slack: qaengineering:eTRqy0JhQOUtKHNO8mKLc8NC
-
-env:
-  global:
-    - SUT_NAME="frameworkium-jira"
-    # override Travis default to give browsers more room
-    - _JAVA_OPTIONS="-Xmx1024m -Xms128m"
-
+notifications:
+  slack:
+    rooms:
+      secure: nYL/1E3KrmshR+6e02T5j7HYK+p92VdaDMTNZWo3CsW43tKhPZsSwJAXhFR0L3aziKHU81BGQldQd+kBQaL7nUcLQf0CA+rtgxvWcte323BCKzJFbvBd6ptRJqvrU+T/LQVmurmv4FbWjjOr9sD5Y4phJ8vA8t937LeJF0IKOudNlUsY5BSA5nsXlreKt7/ybixDLiW83Wv0qhdG9AyScoWmJygxpQjiSJ/nvn3F2WKO+/LlsFCPtoQIUz82IzuCFGFGeG5TlvNuCBLhVinqPSeiATcKEq5P+rHADuFn6zlcX2yn10JVtt7CLBLZ7sMECaMn2aDh4XY3lV2m2Ntu8f3llPyAyI6sxrepfctH69GcBtoxk4sIIq3cXMa7NmzROo8ipLP0UGqvA2h8xoKpjPshT9Fukd9mUhxdSI8AKSNNu1cZFoh78ORF1q5WG0gbbTiV5Y+K5Gza+i3Phl0PMRqrJATxaowBwF0s8qxVqsaIN9AB5RmkRU4gvRQ01jRuhpYtCMBXkHzgqK28vB+lVaCse0iepntiOjgTPyk0GEmVIsecpQHZeMLP/3QXTDHwnKWbVtJ3O3YGx5zvVdQLevqBdNwnR8d818436WlfGzkcffFa6nfsZnrb+2NB7uWhnJgxBsG4GjbqUcGCmg6tXHqLcjuM03iRX7V9G6R9dTI=
 
 script:
-  # Download deps, compile and run checkstyle
-  - mvn clean install --show-version -DskipTests=true -Dmaven.javadoc.skip=true
+  # Download deps, compile and run checkstyle and tests
+  - mvn clean install --show-version -Dmaven.javadoc.skip=true
+
+after_script:
+  # Code coverage report
+  - bash <(curl -s https://codecov.io/bash)

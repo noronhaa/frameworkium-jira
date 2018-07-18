@@ -53,7 +53,7 @@ public class Issue {
         } else if (statuscode == 400){
             return false;
         } else {
-            throw new RuntimeException(
+            throw new IllegalStateException(
                     "unexpected status code, expected 200 (found) or 400 (not found) but got " + statuscode);
         }
     }
