@@ -1,4 +1,4 @@
-package com.frameworkium.jira.listners;
+package com.frameworkium.jira.listeners;
 
 import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;

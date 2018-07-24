@@ -1,4 +1,4 @@
-package com.frameworkium.jira.listners;
+package com.frameworkium.jira.listeners;
 
 import cucumber.runtime.CucumberException;
 import gherkin.formatter.Formatter;

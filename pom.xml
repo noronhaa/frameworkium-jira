@@ -20,7 +20,7 @@
         <dependency>
             <groupId>com.github.frameworkium</groupId>
             <artifactId>frameworkium-base</artifactId>
-            <version>1.0</version>
+            <version>3.0-BETA2</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.testng</groupId>
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.github.frameworkium</groupId>
             <artifactId>frameworkium-reporting</artifactId>
-            <version>1.0</version>
+            <version>3.0-BETA1</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.qameta.allure</groupId>
