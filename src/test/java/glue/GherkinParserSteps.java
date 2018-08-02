@@ -30,13 +30,6 @@ public class GherkinParserSteps {
     private String featurePath;
     private int cycleId;
 
-    public static void main(String[] args) {
-        Optional<String> s = Optional.of("aaa");
-        System.out.println(s.toString());
-        System.out.println(String.valueOf(s));
-        System.out.println(s.get());
-    }
-
     /**
      * Make copy of a base feature which will be used as the feature under test keeping original intact
      * @param baseFile

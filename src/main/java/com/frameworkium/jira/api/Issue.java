@@ -1,5 +1,6 @@
 package com.frameworkium.jira.api;
 
+import com.frameworkium.base.properties.Property;
 import io.restassured.response.Response;
 import com.frameworkium.jira.JiraConfig;
 import org.apache.logging.log4j.LogManager;
@@ -10,6 +11,9 @@ import org.json.JSONObject;
 
 import java.io.File;
 
+/**
+ * Class for interacting with an existing Jira Issue or Zephyr Test
+ */
 public class Issue {
 
     private static final Logger logger = LogManager.getLogger();
@@ -19,6 +23,9 @@ public class Issue {
         this.issueKey = issue;
     }
 
+    /**
+     * Deletes an Issue
+     */
     public void delete(){
         String endpoint = JiraConfig.JIRA_REST_PATH + "issue/" + issueKey;
         JiraConfig.getJIRARequestSpec()
@@ -28,6 +35,11 @@ public class Issue {
                     .delete(endpoint);
     }
 
+
+    /**
+     * Checks if the Issue exists
+     * @return true is the issue exists
+     */
     public boolean found(){
 
         String endpoint = JiraConfig.JIRA_REST_PATH  + "search?jql=issue=" + this.issueKey;
@@ -82,7 +94,7 @@ public class Issue {
 
     /** Adds the file attachment to the JIRA issue. */
     public Response addAttachment(File attachment) {
-        String attachmentPath = String.format("issue/%s/attachments", issueKey);
+        String attachmentPath = String.format("issue/%s/attachments", this.issueKey);
 
         return JiraConfig.getJIRARequestSpec()
                 .header("X-Atlassian-Token", "nocheck")
@@ -90,4 +102,32 @@ public class Issue {
                 .when()
                 .post(JiraConfig.JIRA_REST_PATH + attachmentPath);
     }
+
+
+    /**
+     * Update a Zephyr Test Case. Puts bdd into 'description' field by default but can be overridden by jiraBddFieldKey
+     * property
+     * @param title - title of the Test case
+     * @param bdd - the bdd Given, When, Then steps
+     */
+    public void updateZephyrTest(String title, String bdd){
+
+        JSONObject object = new JSONObject();
+        JSONObject fields = new JSONObject();
+        fields.put(JiraConfig.getBddFieldKey(), bdd); //field for custom 'bdd' field
+        fields.put("summary",title);
+        object.put("fields", fields);
+
+        String endpoint = JiraConfig.JIRA_REST_PATH + "issue/" + this.issueKey;
+
+        JiraConfig.getJIRARequestSpec()
+                .given()
+                .contentType("application/json")
+                .body(object.toString())
+                .expect()
+                .statusCode(204).log().ifError()
+                .when()
+                .put(endpoint);
+    }
+
 }

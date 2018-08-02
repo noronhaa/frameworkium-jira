@@ -11,7 +11,7 @@ public class JiraConfig {
     public static final String REST_ZAPI_PATH = "/rest/zapi/latest/";
     public static final String ZEPHYR_TAG_PREFIX = "@TestCaseId:";
     public static final String NO_UPLOAD_TO_ZEPHYR = "@NoZephyr";
-
+    private static final String DEFAULT_JIRA_BDD_FIELD_KEY = "description";
 
 
     private JiraConfig() {
@@ -42,6 +42,34 @@ public class JiraConfig {
         public static final int ZAPI_STATUS_BLOCKED = 4;
     }
 
+    public enum Priority{
+        _1_CRITICAL("5"),
+        _2_HIGH("1"),
+        _3_MEDIUM("2"),
+        _4_LOW("3"),
+        UNCATEGORISED("6");
+        public String value;
+
+        Priority(String priority) {
+            this.value = priority;
+        }
+
+    }
+
+    public enum IssueType{
+        BUG("Bug"),
+        EPIC("Epic"),
+        STORY("Story"),
+        TEST("Test"),
+        TASK("Task");
+
+        private String name;
+
+        IssueType(String task) {
+            name = task;
+        }
+    }
+
     /**
      * These should correspond to your field options
      * if logging a test result to a field.
@@ -64,5 +92,19 @@ public class JiraConfig {
         public static final String[] JIRA_TRANSITION_FAIL = {"Done"};
         public static final String[] JIRA_TRANSITION_WIP = {"Reopen", "Start Progress"};
         public static final String[] JIRA_TRANSITION_BLOCKED = {"Done"};
+    }
+
+    //todo what should default value be?? custom bddfield or description field?
+    /**
+     * Use a default field for putting the BDD in a Zephyr field however we can allow this to be overridden by supplying
+     * a system property
+     * @return key for the Jira Field to place the BDD given,when,then
+     */
+    public static String getBddFieldKey(){
+        if(Property.JIRA_BDD_FIELD_KEY.isSpecified()){
+            return Property.JIRA_BDD_FIELD_KEY.getValue();
+        } else {
+            return DEFAULT_JIRA_BDD_FIELD_KEY;
+        }
     }
 }

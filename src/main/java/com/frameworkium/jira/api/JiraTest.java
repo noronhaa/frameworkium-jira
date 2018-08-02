@@ -8,6 +8,9 @@ import org.json.*;
 
 import static com.frameworkium.jira.JiraConfig.JIRA_REST_PATH;
 
+/**
+ * This class is modeled for using a normal Jira Issue as a test case. This is NOT the same as a Zephyr Test
+ */
 public class JiraTest {
 
     private static final Logger logger = LogManager.getLogger();
@@ -17,6 +20,7 @@ public class JiraTest {
     private JiraTest() {}
 
     //todo this is flaky, depending on the field you may need a different json object to be parsed in or you get 400 bad request
+    // however reluctant to change as it is existing functionality and could break existing usage
     /** Create and send a PUT request to JIRA to change the value of a field. */
     public static Response changeIssueFieldValue(
             String issueKey, String fieldToUpdate, String resultValue) {
@@ -26,15 +30,12 @@ public class JiraTest {
         JSONObject fieldObj = new JSONObject();
         JSONArray setArr = new JSONArray();
         JSONObject setObj = new JSONObject();
-        JSONObject valueObj = new JSONObject();
 
         try {
             obj.put("update", fieldObj);
             fieldObj.put(getFieldId(fieldToUpdate), setArr);
             setArr.put(setObj);
             setObj.put("set", resultValue);
-//            setObj.put("set", valueObj);
-//            valueObj.put("value", resultValue);
 
             response = JiraConfig.getJIRARequestSpec()
                     .contentType("application/json").and()
@@ -75,19 +76,28 @@ public class JiraTest {
 
 
     /**
-     * Query the field id using the issueType of the field
+     * Query list of all fields and then find the ID of a field by issueType
      * @param fieldName
      * @return field id
      */
-    private static String getFieldId(String fieldName) {
+    static String getFieldId(String fieldName) {
 
-        return JiraConfig.getJIRARequestSpec()
+        String fieldId =  JiraConfig.getJIRARequestSpec()
+                .expect()
+                    .statusCode(200).log().ifError()
                 .when()
-                .get(JIRA_REST_PATH + "field")
+                    .get(JIRA_REST_PATH + "field")
                 .thenReturn().jsonPath()
                 .getString(String.format("find {it.name == '%s'}.id", fieldName));
-    }
 
+        if(fieldId == null){
+            String message = String.format("could not find an ID for field '%s' check field name spelt " +
+                    "right with correct capitalisation", fieldName);
+            logger.error(message);
+        }
+
+        return  fieldId;
+    }
 
     /**
      * Create and post a JSON request for a comment update in JIRA.
@@ -120,6 +130,12 @@ public class JiraTest {
         return transitionIssue(issueKey, getTransitionId(issueKey, transitionName));
     }
 
+    /**
+     * Transition the status of an issue eg open -> In progress
+     * @param issueKey key of the issue to transition to a new state
+     * @param transitionId the ID of the new state
+     * @return response of the request
+     */
     private static Response transitionIssue(String issueKey, int transitionId) {
 
         Response response = null;
@@ -143,6 +159,13 @@ public class JiraTest {
         return response;
     }
 
+
+    /**
+     * use the name of the a transition to find its ID
+     * @param issueKey issue you wish to transition so find available transitions from Issues current state
+     * @param transitionName name of the transition you want to transition the issue state to
+     * @return
+     */
     private static int getTransitionId(String issueKey, String transitionName) {
 
         return JiraConfig.getJIRARequestSpec()

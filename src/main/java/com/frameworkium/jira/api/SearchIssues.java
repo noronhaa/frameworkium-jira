@@ -30,6 +30,7 @@ public class SearchIssues {
         }
     }
 
+
     public List<String> getKeys() {
         return jsonPath.getList("issues.key");
     }

@@ -6,6 +6,9 @@
 - [DONE] implement logging output
 - write docs
 
+- find all feature files within a dir
+
+
 
 Tests
 - Wrong ID

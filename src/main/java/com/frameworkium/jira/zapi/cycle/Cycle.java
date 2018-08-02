@@ -28,7 +28,6 @@ public class Cycle {
      * @param cycleEntity build request body using CycleEntity object, required fields are versionId, sprintId, projectId, issueType
      * @return id of newly created cycle
      */
-    //todo create new cycle IF cycle doesn't exist??
     public int createNewCycle(CycleEntity cycleEntity){
         int cycleId =  JiraConfig.getJIRARequestSpec()
                                 .given()
@@ -45,34 +44,6 @@ public class Cycle {
         return cycleId;
     }
 
-    public static void main(String[] args) {
-//
-//                String match = "E2E Automation Cycle";
-//
-//                HashMap<String, Object> result = JsonPath.from(s2).get();
-//                int cycleId = -2; // -1 reserved for adhock cycleId
-//
-//                Optional<String> cycleIdIfFound = result.entrySet()
-//                                    .stream()
-//                        .filter(e -> !e.getKey().equals("recordsCount"))
-//                        .filter(e -> ((HashMap<String,String>) e.getValue()).get("name").equals(match))
-//                        .map(Map.Entry::getKey)
-//                        .findFirst();
-//
-//                if (cycleIdIfFound.isPresent()){
-//                    cycleId = Integer.valueOf(cycleIdIfFound.get());
-//                }
-//
-//                System.out.println(cycleId);
-//
-
-
-//        List<String> result = jsonPath.getList("findAll { it.name == 'Auto Test Cycle 1'}.versionName");
-//        Boolean result = jsonPath.get("$..['name']");
-//        String result = jsonPath.getString("237.name");
-//        System.out.println(result.size());
-
-    }
 
     /**
      * Query ZAPI for list of cycles using projectId and version Id. Check results to find a match for cycleName, if no
@@ -99,7 +70,7 @@ public class Cycle {
                     .given()
                         .contentType(APPLICATION_JSON)
                     .expect()
-                        .statusCode(200)
+                        .statusCode(200).log().ifError()
                     .when()
                         .get(endpoint)
                     .thenReturn()

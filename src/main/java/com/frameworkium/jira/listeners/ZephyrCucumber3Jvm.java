@@ -3,8 +3,10 @@ package com.frameworkium.jira.listeners;
 import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.api.NewIssue;
+import com.frameworkium.jira.api.NewIssueBuilder;
 import com.frameworkium.jira.gherkin.FeatureParser;
 import com.frameworkium.jira.gherkin.GherkinUtils;
+import com.frameworkium.jira.properties.Validation;
 import com.frameworkium.jira.zapi.Execution;
 import com.frameworkium.jira.zapi.cycle.AddToCycleEntity;
 import com.frameworkium.jira.zapi.cycle.Cycle;
@@ -21,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class CukesListenerV2 implements Formatter {
+public class ZephyrCucumber3Jvm implements Formatter {
 
     private static final Logger logger = LogManager.getLogger();
 
@@ -32,9 +34,6 @@ public class CukesListenerV2 implements Formatter {
     private String zephyrId;
 
     private static final String UPDATE_COMMENT = "Updated by frameworkium-jira";
-    private static final String CREATE_COMMENT = "Created by frameworkium-jira";
-
-//todo properties validation?
 
     private EventHandler<TestCaseStarted> caseStartedHandler = this::handleTestCaseStarted;
     private EventHandler<TestCaseFinished> caseFinishedEventHandler = this::handleTestCaseFinished;
@@ -42,9 +41,12 @@ public class CukesListenerV2 implements Formatter {
 
     @Override
     public void setEventPublisher(EventPublisher publisher) {
-        publisher.registerHandlerFor(TestCaseStarted.class, caseStartedHandler);
-        publisher.registerHandlerFor(TestCaseFinished.class, caseFinishedEventHandler);
-        publisher.registerHandlerFor(TestRunStarted.class, testRunStartedHandler);
+        //If there are properties missing don't bother registering the handlers - basically switch off listener
+        if (Validation.allPropertiesPresent()) {
+            publisher.registerHandlerFor(TestCaseStarted.class, caseStartedHandler);
+            publisher.registerHandlerFor(TestCaseFinished.class, caseFinishedEventHandler);
+            publisher.registerHandlerFor(TestRunStarted.class, testRunStartedHandler);
+        }
     }
 
 
@@ -68,25 +70,33 @@ public class CukesListenerV2 implements Formatter {
     private void handleTestCaseStarted(TestCaseStarted event) {
         logger.info("TestCaseStarted event");
         List<PickleTag> tags = event.testCase.getTags();
+
+        //Get tags from the scenario and see if there are any that match '@TestCaseId:' indicating a Zephyr test
         Optional<String> zephyrTag = GherkinUtils.getZephyrIdFromTags(tags);
 
-        if (!zephyrTag.isPresent()) {
-            //create Zephyr Test case
-            zephyrTag = Optional.of(createZephyrTest(event));
+        //todo DO WE WANT TO CREATE Z TESTS FROM LISTENER???? The commented out code will automatically create a Zephyr test for a test that is not tagged with a Z tag
+//        if (!zephyrTag.isPresent()) {
+//            //If there is no zephyr tag then there is no test in zephyr so we create one returning the Jira/Zephyr id
+//            zephyrTag = Optional.of(createZephyrTest(event));
+//
+//            //find original scenario and update with new Zephyr Id in format @TestCaseId:<Zephyr Id>
+//            String uri = event.testCase.getUri();
+//            String scenarioName = event.testCase.getName();
+//            new FeatureParser(uri).addTagsToScenario(scenarioName, zephyrTag.get());
+//        }
 
-            //find original scenario and update with new Zephyr Id
-            String uri = event.testCase.getUri();
-            String scenarioName = event.testCase.getName();
-            new FeatureParser(uri).addTagsToScenario(scenarioName, zephyrTag.get());
+        if (zephyrTag.isPresent()){
+            //Add the current Zephyr test to the Zephyr Test Cycle
+            addTestToZephyrCycle(zephyrTag.get());
+
+            //Update the Zephyr Test Status to WIP as we are about to execute the test
+            new Execution(zephyrTag.get()).update(
+                    JiraConfig.ZapiStatus.ZAPI_STATUS_WIP, UPDATE_COMMENT);
+
+            //set zephyr ID externally so we can hook onto it after test has run
+            this.zephyrId = zephyrTag.get();
         }
 
-        addTestToZephyrCycle(zephyrTag.get());
-
-        //set zephyr ID externally
-        new Execution(zephyrTag.get()).update(
-                JiraConfig.ZapiStatus.ZAPI_STATUS_WIP, UPDATE_COMMENT);
-
-        this.zephyrId = zephyrTag.get();
     }
 
 
@@ -100,15 +110,25 @@ public class CukesListenerV2 implements Formatter {
         logger.info("TestCaseFinished event");
         String comment = UPDATE_COMMENT;
 
-        //Add stack trace of test not pass
-        if (!event.result.is(Result.Type.PASSED)){
-            comment = comment + "\n" + event.result.getErrorMessage();
+        if (this.zephyrId != null){
+            //Add stack trace of test if status not pass
+            if (!event.result.is(Result.Type.PASSED)){
+                comment = comment + "\n" + event.result.getErrorMessage();
+            }
+
+            //Update Zephyr test case with result status
+            new Execution(this.zephyrId).update(
+                    getUpdateStatus(event), comment);
         }
 
-        //Update Zephyr test case
-        new Execution(this.zephyrId).update(
-                getUpdateStatus(event), comment);
+        //reset the zephyr tag for next test run
+        this.zephyrId = null;
     }
+
+
+
+
+    //----Utility Methods----
 
 
     private void addTestToZephyrCycle(String zephyrTag){
@@ -133,17 +153,19 @@ public class CukesListenerV2 implements Formatter {
             projectId = zephyrCycle.getProjectIdByKey(projectKey);
             versionId = zephyrCycle.getVersionIdByName(projectId, version);
 
+            //get cycle id if the cycle exists, return -2 if it does not exist
             int cycleExist = zephyrCycle.cycleExists(projectKey,version,cycleName);
 
-            //get cycle id, -2 mean no cycle exists
+            //if the cycle does not exist (-2) then create the Zephyr Test Cycle
             if (cycleExist == -2){
 
-                //create new cycle
+                //create new cycle details object
                 CycleEntity cycleEntity = new CycleEntity(
                         cycleName,
                         projectId,
                         versionId);
 
+                //create new cycle returning cycle Id
                 zephyrCycleId = zephyrCycle.createNewCycle(cycleEntity);
             } else {
                 //assign id of existing cycle
@@ -161,7 +183,14 @@ public class CukesListenerV2 implements Formatter {
                 .map(step -> step + "\n")
                 .collect(Collectors.joining(","))
                 .replace(",","");
-        return new NewIssue(projectKey,name,CREATE_COMMENT,NewIssue.IssueType.TEST,steps).create();
+
+        return new NewIssueBuilder()
+                .setKey(projectKey)
+                .setSummary(name)
+                .setIssueType(NewIssue.IssueType.TEST)
+                .setBddField(steps)
+                .createNewIssue()
+                .create();
     }
 
 

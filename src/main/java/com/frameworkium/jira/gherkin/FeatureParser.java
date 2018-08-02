@@ -5,14 +5,13 @@ import com.frameworkium.jira.FileUtils;
 import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.api.Issue;
 import com.frameworkium.jira.api.NewIssue;
+import com.frameworkium.jira.api.NewIssueBuilder;
 import gherkin.AstBuilder;
 import gherkin.Parser;
 import gherkin.ast.GherkinDocument;
 import gherkin.pickles.Pickle;
 import gherkin.pickles.Compiler;
 import gherkin.pickles.PickleStep;
-import gherkin.pickles.PickleTag;
-import lombok.Data;
 import lombok.Getter;
 //import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +48,10 @@ public class FeatureParser {
         pickles = parse();
     }
 
-
+    /**
+     * Parse feature file and transform into a list of pickles
+     * @return list of pickles, each pickle being a scenario
+     */
     private List<Pickle> parse(){
         String feature = FileUtils.readFile(this.featurePath);
         Parser<GherkinDocument> parser = new Parser<>(new AstBuilder());
@@ -57,35 +59,82 @@ public class FeatureParser {
         return new Compiler().compile(gherkinDocument);
     }
 
-    //todo update zephyr for tests that pickleHasZephyrTag == true
+//    /**
+//     * Filter all Scenario that do not have an existing Zephyr test tag or do not have the @NoZephyr tag, then create
+//     * a test case in Zpehyr for each Scenario. For the ID of the new Zephyr test case add a corresponding cucumber tag
+//     * to the original cucumber Scenario
+//     */
+//    public void syncTestsWithZephyr(){
+//        this.pickles.stream()
+//                .filter(pickle -> !GherkinUtils.pickleHasZephyrTag(pickle.getTags()))
+//                .filter(pickle -> !GherkinUtils.pickleContainsTag(pickle.getTags(),JiraConfig.NO_UPLOAD_TO_ZEPHYR))
+//                .forEach(pickle -> {
+//                    String zId = addTestToZephyr(pickle);
+//                    addTagsToScenario(pickle, zId);
+//                });
+//    }
+
+
+    /**
+     * Splits the Feature into Scenarios with Zephyr tags and Scenarios without. Scenarios with a zephyr file will have
+     * the Zephyr Test case updated in case there have been any changes or edits. Scenarios without a zephyr tag will
+     * have a new Zepyhr test case created AND the the ID of the new Zephyr test case will be added to the corresponding
+     * Scenario as a cucumber test. Scenarios with the @NoZephyr tag will not have a Zephyr test case created.
+     */
     public void syncTestsWithZephyr(){
-        this.pickles.stream()
-                .filter(pickle -> !GherkinUtils.pickleHasZephyrTag(pickle.getTags()))
+        Map<Boolean,List<Pickle>> groups = this.pickles
+                .stream()
+                .collect(Collectors.partitioningBy(pickle -> GherkinUtils.pickleHasZephyrTag(pickle.getTags())));
+
+        List<Pickle> hasZephyrTag = groups.get(true);
+        List<Pickle> noZephyrTag = groups.get(false);
+
+        noZephyrTag.stream()
                 .filter(pickle -> !GherkinUtils.pickleContainsTag(pickle.getTags(),JiraConfig.NO_UPLOAD_TO_ZEPHYR))
                 .forEach(pickle -> {
                     String zId = addTestToZephyr(pickle);
                     addTagsToScenario(pickle, zId);
                 });
+
+        hasZephyrTag
+                .forEach(pickle -> {
+                    String zId = GherkinUtils.getZephyrIdFromTags(pickle.getTags()).get();
+                    new Issue(zId).updateZephyrTest(pickle.getName(), GherkinUtils.generateBddFromSteps(pickle.getSteps()));
+                });
     }
 
 
+    /**
+     * Create a new Zephyr Test Case
+     * @param pickle the pickle form of a Scenario use to create a Zephyr Test Case
+     * @return the Zephyr ID of the newly created Test Case
+     */
     private String addTestToZephyr(Pickle pickle) {
         String scenarioTitle = pickle.getName();
-        String scenarioSteps = pickle.getSteps().stream()
-                .map(PickleStep::getText)
-                .map(step -> step + "\n")
-                .collect(Collectors.joining(","))
-                .replace(",","");
+        String scenarioSteps = GherkinUtils.generateBddFromSteps(pickle.getSteps());
         String project = Property.JIRA_PROJECT_KEY.getValue();
-        return new NewIssue(project,scenarioTitle,Z_TEST_GENERATED_MESSAGE,NewIssue.IssueType.TEST,scenarioSteps).create();
+
+        return new NewIssueBuilder()
+                .setKey(project)
+                .setSummary(scenarioTitle)
+                .setDescription(Z_TEST_GENERATED_MESSAGE)
+                .setIssueType(NewIssue.IssueType.TEST)
+                .setBddField(scenarioSteps)
+                .createNewIssue()
+                .create();
     }
 
 
-    public void updateZephyrTest(){
-        //todo put request to push/update existing source bdd into zephyr
-        //update title
-        //update bdd section
-        //possibly just reuse some of create(Pickle pickle)
+    /**
+     * Overloaded Method of addTagsToScenario(String scenarioName, String zephyrId) that takes a pickle instead of string
+     * for scenario name
+     * @param pickle aka scenario you want to update
+     * @param zephyrId Zephyr ID that we need to add to scenario as
+     */
+    public void addTagsToScenario(Pickle pickle, String zephyrId){
+        String scenarioNameToUpdate = pickle.getName();
+
+        addTagsToScenario(scenarioNameToUpdate, zephyrId);
     }
 
     /**
@@ -95,34 +144,11 @@ public class FeatureParser {
      * 3 - replace that line with a line with the tag followed by original scenario line
      * 4 - transform stream of strings to bytes
      * 5 - write bytes to original file (overwrite)
-     * @param pickle aka scenario you want to update
+     * @param scenarioName name of scenario to look for
      * @param zephyrId ID of Zephyr test
      */
-    public void addTagsToScenario(Pickle pickle, String zephyrId){
-        String tag = JiraConfig.ZEPHYR_TAG_PREFIX + zephyrId;
-        String scenarioNameToUpdate = pickle.getName();
-
-        //regex to match: (any number of white space)Scenario:(0 or 1 whitespace)(issueType of scenario)
-        String scenarioTitle = String.format("( *)%s( ?)%s",SCENARIO_KEYWORD, scenarioNameToUpdate);
-        String scenarioLine = INDENTATION + SCENARIO_KEYWORD + " " + scenarioNameToUpdate;
-        File file = new File(this.featurePath);
-        String fileContext = null;
-
-        try {
-            //todo check this read method works ok
-            fileContext = com.frameworkium.jira.FileUtils.readFile(this.featurePath);
-            fileContext = fileContext.replaceAll(scenarioTitle,
-                     INDENTATION + tag + NEW_LINE + scenarioLine);
-            org.apache.commons.io.FileUtils.write(file, fileContext);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     public void addTagsToScenario(String scenarioName, String zephyrId){
         String tag = JiraConfig.ZEPHYR_TAG_PREFIX + zephyrId;
-//        String scenarioNameToUpdate = pickle.getName();
 
         //regex to match: (any number of white space)Scenario:(0 or 1 whitespace)(issueType of scenario)
         String scenarioTitle = String.format("( *)%s( ?)%s",SCENARIO_KEYWORD, scenarioName);
@@ -131,7 +157,6 @@ public class FeatureParser {
         String fileContext = null;
 
         try {
-            //todo check this read method works ok
             fileContext = com.frameworkium.jira.FileUtils.readFile(this.featurePath);
             fileContext = fileContext.replaceAll(scenarioTitle,
                     INDENTATION + tag + NEW_LINE + scenarioLine);
@@ -139,8 +164,6 @@ public class FeatureParser {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
 
 }

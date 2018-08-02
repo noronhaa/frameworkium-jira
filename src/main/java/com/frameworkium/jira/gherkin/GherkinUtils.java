@@ -3,10 +3,12 @@ package com.frameworkium.jira.gherkin;
 import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.api.Issue;
 import gherkin.pickles.Pickle;
+import gherkin.pickles.PickleStep;
 import gherkin.pickles.PickleTag;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class GherkinUtils {
 
@@ -56,6 +58,14 @@ public class GherkinUtils {
                 .map(GherkinUtils::stripZephyrTag)
                 .filter(tag -> new Issue(tag).found())
                 .findFirst();
+    }
+
+    public static String generateBddFromSteps(List<PickleStep> steps){
+        return steps.stream()
+                .map(PickleStep::getText)
+                .map(step -> step + "\n")
+                .collect(Collectors.joining(","))
+                .replace(",","");
     }
 
 }

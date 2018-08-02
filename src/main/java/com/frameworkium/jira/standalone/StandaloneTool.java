@@ -1,8 +1,10 @@
 package com.frameworkium.jira.standalone;
 
+import com.frameworkium.jira.FileUtils;
 import com.frameworkium.jira.exceptions.CsvException;
+import com.frameworkium.jira.gherkin.FeatureParser;
+import com.frameworkium.jira.properties.Validation;
 import com.frameworkium.jira.zapi.Execution;
-import io.restassured.response.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,22 +12,21 @@ import java.io.*;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import com.frameworkium.jira.JiraConfig;
-
 
 public class StandaloneTool {
 
-    private String csvFile;
+    private String filePath;
     private static final String COMMA = ",";
     private static boolean errorsEncountered = false;
 
     private final Logger logger = LogManager.getLogger();
 
-    public StandaloneTool(String csvFile) {
-        this.csvFile = csvFile;
+    public StandaloneTool(String filePath) {
+        this.filePath = filePath;
     }
 
 
+    //for test purposes only
     public static void main(String[] args) {
 
         String[] testArgs = {"src/test/resources/csv/noAttachment.csv",
@@ -39,7 +40,7 @@ public class StandaloneTool {
     }
 
     private static void entryPointForDebugging(String[] args){
-        StandaloneTool uploader = new StandaloneTool(args[0]);
+        StandaloneTool uploader = new StandaloneTool(args[1]);
         uploader.checkArgs(args);
         uploader.checkProperties(args);
         uploader.uploadResultsFromCsv();
@@ -84,7 +85,7 @@ public class StandaloneTool {
 
     public List<ZephyrTestObject> collectTests(){
 
-        File csvFile = new File(this.csvFile);
+        File csvFile = new File(this.filePath);
 
         try (InputStream inputStream = new FileInputStream(csvFile);
              BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));){
@@ -99,7 +100,6 @@ public class StandaloneTool {
         }
 
     }
-
 
     /**
      * function to take a line of the csv and map it to a ZephyrTestObject
@@ -121,6 +121,11 @@ public class StandaloneTool {
         }
     };
 
+    /**
+     * in the comment there may be comma which would mess wit the csv so we need to handle a comment having a comma.
+     * @param line in CSV file
+     * @return An array of 2 elements, first element is the comment, second element is the attachments
+     */
     private String[] handleCommaInComment(String line){
         char doubleQuote = '\"';
         char comma =',';
@@ -166,22 +171,16 @@ public class StandaloneTool {
     }
 
 
-
-
-
-
     /**
      * Check that the Jira/Zephyr properties are correct and we can successfully connect to Jira
      * @param args
      */
     void checkProperties(String[] args){
         System.out.print("Checking properties..");
-        setProperties(args[1],args[2],args[3],args[4],args[5]);
+        setProperties(args[2],args[3],args[4],args[5],args[6]);
 
-        Response response = JiraConfig.getJIRARequestSpec().get("/rest/auth/1/session");
-
-        if (response.statusCode() != 200){
-            throw new RuntimeException("Could not authenticate, expected 200 but got " + response.statusCode());
+        if (!Validation.authenticateJira()){
+            throw new RuntimeException("Could not authenticate to Jira");
         } else {
             System.out.println("Done");
         }
@@ -194,18 +193,34 @@ public class StandaloneTool {
     void checkArgs(String[] args){
 
         String expected = "expected args are:" +
-                "\n1) csv file path" +
-                "\n2) jiraURL" +
-                "\n3) jiraUsername" +
-                "\n4) jiraPassword" +
-                "\n5) resultVersion" +
-                "\n6) zapiCycleRegEx ";
+                "\n1) keyword: 'update' or 'sync'" +
+                "\n2) csv file path / featureFile or top directory path" +
+                "\n3) jiraURL" +
+                "\n4) jiraUsername" +
+                "\n5) jiraPassword" +
+                "\n6) resultVersion" +
+                "\n7) zapiCycleRegEx ";
 
         String errorMessage = "Incorrect amount of args, expected at least 5 but got " + args.length + "\n" + expected;
 
         System.out.print("Checking args..");
-        if (args.length != 6) { throw new RuntimeException(errorMessage); }
+        if (args.length != 7) { throw new RuntimeException(errorMessage); }
         System.out.println("Done");
+    }
+
+
+    /**
+     * Looks for all feature files from this top level directory or will just take a single feature file as arg. Then
+     * create a new zephyr test for every BDD without a zephyr test. For existing Zephyr Tests update the Zephyr test
+     * with any local changes to the BDD
+     * @param featureDir either a feature file or a directory to recursively look through for feature files
+     */
+    public void syncBddsWithZephyr(String featureDir){
+        FileUtils.findFeatures(featureDir).forEach(feature -> new FeatureParser(feature).syncTestsWithZephyr());
+    }
+
+    public void syncBddsWithZephyr(){
+        FileUtils.findFeatures(this.filePath).forEach(feature -> new FeatureParser(feature).syncTestsWithZephyr());
     }
 
     public static void setErrorsEncountered(Boolean errors){
