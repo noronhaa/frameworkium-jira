@@ -37,37 +37,37 @@ public class NewIssue {
         JSONObject fields = new JSONObject();
 
         JSONObject project = new JSONObject();
-        project.put("key",this.key);
+        project.put("key", this.key);
 
         JSONObject issueType = new JSONObject();
         issueType.put("name", this.issueType.name);
 
-        fields.put("project",project);
-        fields.put("summary",this.summary);
-        fields.put("issuetype",issueType);
+        fields.put("project", project);
+        fields.put("summary", this.summary);
+        fields.put("issuetype", issueType);
 
 //        JSONObject originEntity = new JSONObject();
 //        originEntity.put("value","Test");
 //        fields.put(CUSTOM_ORIGIN_FIELD_ID,originEntity);
 
-        if (description != null){
-            fields.put("description",this.description);
+        if (description != null) {
+            fields.put("description", this.description);
         }
 
-        if (bddField != null){
+        if (bddField != null) {
             fields.put(JiraConfig.getBddFieldKey(), this.bddField);
         }
 
-        if (labels != null){
+        if (labels != null) {
             fields.put("labels", this.labels);
         }
 
         customFields.forEach(fields::put);
 
-        if (priority !=null){
+        if (priority != null) {
             JSONObject priority = new JSONObject();
             priority.put("id", this.priority.value);
-            fields.put("priority",priority);
+            fields.put("priority", priority);
         }
 
         object.put("fields", fields);
@@ -81,9 +81,8 @@ public class NewIssue {
     // TODO: create doesn't belong here, should separate out the data from the create
     /**
      * Send POST request to create new Jira Issue
-     * @return
      */
-    public String create(){
+    public String create() {
         String endpoint = JiraConfig.JIRA_REST_PATH + "issue";
 
         //TODO get the bdd out to display properly
@@ -108,7 +107,7 @@ public class NewIssue {
 
     }
 
-    public enum IssueType{
+    public enum IssueType {
         BUG("Bug"),
         EPIC("Epic"),
         STORY("Story"),

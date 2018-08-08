@@ -42,7 +42,7 @@ public class JiraConfig {
         public static final int ZAPI_STATUS_BLOCKED = 4;
     }
 
-    public enum Priority{
+    public enum Priority {
         _1_CRITICAL("5"),
         _2_HIGH("1"),
         _3_MEDIUM("2"),
@@ -56,7 +56,7 @@ public class JiraConfig {
 
     }
 
-    public enum IssueType{
+    public enum IssueType {
         BUG("Bug"),
         EPIC("Epic"),
         STORY("Story"),
@@ -95,13 +95,15 @@ public class JiraConfig {
     }
 
     //todo what should default value be?? custom bddfield or description field?
+
     /**
      * Use a default field for putting the BDD in a Zephyr field however we can allow this to be overridden by supplying
      * a system property
+     *
      * @return key for the Jira Field to place the BDD given,when,then
      */
-    public static String getBddFieldKey(){
-        if(Property.JIRA_BDD_FIELD_KEY.isSpecified()){
+    public static String getBddFieldKey() {
+        if (Property.JIRA_BDD_FIELD_KEY.isSpecified()) {
             return Property.JIRA_BDD_FIELD_KEY.getValue();
         } else {
             return DEFAULT_JIRA_BDD_FIELD_KEY;

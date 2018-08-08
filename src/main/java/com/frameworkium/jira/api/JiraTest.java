@@ -1,7 +1,7 @@
 package com.frameworkium.jira.api;
 
-import io.restassured.response.Response;
 import com.frameworkium.jira.JiraConfig;
+import io.restassured.response.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.*;
@@ -21,6 +21,7 @@ public class JiraTest {
 
     //todo this is flaky, depending on the field you may need a different json object to be parsed in or you get 400 bad request
     // however reluctant to change as it is existing functionality and could break existing usage
+
     /** Create and send a PUT request to JIRA to change the value of a field. */
     public static Response changeIssueFieldValue(
             String issueKey, String fieldToUpdate, String resultValue) {
@@ -52,7 +53,8 @@ public class JiraTest {
     /**
      * Generic method to change a field as different field will require different json bodies,
      * create your own json object to update a field and parse into this wrapper method
-     * @param issueKey key of the JIRA ticket you want to update
+     *
+     * @param issueKey   key of the JIRA ticket you want to update
      * @param jsonObject the json object representing the field you wish to change and new value
      * @return response object from request
      */
@@ -77,26 +79,26 @@ public class JiraTest {
 
     /**
      * Query list of all fields and then find the ID of a field by issueType
-     * @param fieldName
+     *
      * @return field id
      */
     static String getFieldId(String fieldName) {
 
-        String fieldId =  JiraConfig.getJIRARequestSpec()
+        String fieldId = JiraConfig.getJIRARequestSpec()
                 .expect()
-                    .statusCode(200).log().ifError()
+                .statusCode(200).log().ifError()
                 .when()
-                    .get(JIRA_REST_PATH + "field")
+                .get(JIRA_REST_PATH + "field")
                 .thenReturn().jsonPath()
                 .getString(String.format("find {it.name == '%s'}.id", fieldName));
 
-        if(fieldId == null){
+        if (fieldId == null) {
             String message = String.format("could not find an ID for field '%s' check field name spelt " +
                     "right with correct capitalisation", fieldName);
             logger.error(message);
         }
 
-        return  fieldId;
+        return fieldId;
     }
 
     /**
@@ -132,7 +134,8 @@ public class JiraTest {
 
     /**
      * Transition the status of an issue eg open -> In progress
-     * @param issueKey key of the issue to transition to a new state
+     *
+     * @param issueKey     key of the issue to transition to a new state
      * @param transitionId the ID of the new state
      * @return response of the request
      */
@@ -162,9 +165,9 @@ public class JiraTest {
 
     /**
      * use the name of the a transition to find its ID
-     * @param issueKey issue you wish to transition so find available transitions from Issues current state
+     *
+     * @param issueKey       issue you wish to transition so find available transitions from Issues current state
      * @param transitionName name of the transition you want to transition the issue state to
-     * @return
      */
     private static int getTransitionId(String issueKey, String transitionName) {
 

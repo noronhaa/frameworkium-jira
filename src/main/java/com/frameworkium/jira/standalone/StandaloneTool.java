@@ -47,7 +47,7 @@ public class StandaloneTool {
     /**
      * Take the csv file and return a list of ZephyrTestObject for each line which represents a single test
      */
-    public void uploadResultsFromCsv(){
+    public void uploadResultsFromCsv() {
 
         logger.info("Starting Zephyr update");
 
@@ -57,7 +57,7 @@ public class StandaloneTool {
 
         logger.info("Zephyr update complete");
 
-        if (errorsEncountered){
+        if (errorsEncountered) {
             logger.info("Errors found during update");
         }
     }
@@ -97,12 +97,13 @@ public class StandaloneTool {
 
     /**
      * in the comment there may be comma which would mess wit the csv so we need to handle a comment having a comma.
+     *
      * @param line in CSV file
      * @return An array of 2 elements, first element is the comment, second element is the attachments
      */
-    private String[] handleCommaInComment(String line){
+    private String[] handleCommaInComment(String line) {
         char doubleQuote = '\"';
-        char comma =',';
+        char comma = ',';
 
         int startQuoteIndex = -1;
         int endQuoteIndex = -1;
@@ -128,14 +129,14 @@ public class StandaloneTool {
         if (doubleQuoteCount != 2) {
             logger.info("Invalid Comment, should contain 0 or 2 double quotes, skipping csv row");
             throw new CsvException(String.format("Found %s double quotes. Should be 0 or 2 double quotes and only in the " +
-                    "comment section of the CSV",doubleQuoteCount));
+                    "comment section of the CSV", doubleQuoteCount));
         }
 
-        String comment = line.substring(startQuoteIndex +1,endQuoteIndex);
-        String attachments = line.substring(lastComma +1);
+        String comment = line.substring(startQuoteIndex + 1, endQuoteIndex);
+        String attachments = line.substring(lastComma + 1);
 
         // check we are not missing last actual comma before attachments in CSV
-        if (lastComma < endQuoteIndex){
+        if (lastComma < endQuoteIndex) {
             logger.info("Missing comma after comment in csv");
             throw new ArrayIndexOutOfBoundsException();
         }
@@ -144,16 +145,14 @@ public class StandaloneTool {
 
     }
 
-
     /**
      * Check that the Jira/Zephyr properties are correct and we can successfully connect to Jira
-     * @param args
      */
-    void checkProperties(String[] args){
+    void checkProperties(String[] args) {
         System.out.print("Checking properties..");
-        setProperties(args[2],args[3],args[4],args[5],args[6]);
+        setProperties(args[2], args[3], args[4], args[5], args[6]);
 
-        if (!Validation.authenticateJira()){
+        if (!Validation.authenticateJira()) {
             throw new RuntimeException("Could not authenticate to Jira");
         } else {
             System.out.println("Done");
@@ -162,9 +161,8 @@ public class StandaloneTool {
 
     /**
      * Check there are the correct amount of arguments parsed into the Jar
-     * @param args
      */
-    void checkArgs(String[] args){
+    void checkArgs(String[] args) {
 
         String expected = "expected args are:" +
                 "\n1) keyword: 'update' or 'sync'" +
@@ -178,15 +176,19 @@ public class StandaloneTool {
         String errorMessage = "Incorrect amount of args, expected at least 5 but got " + args.length + "\n" + expected;
 
         System.out.print("Checking args..");
-        if (args.length != 7) { throw new RuntimeException(errorMessage); }
+        if (args.length != 7) {
+            throw new RuntimeException(errorMessage);
+        }
         System.out.println("Done");
     }
 
 
     /**
-     * Looks for all feature files from this top level directory or will just take a single feature file as arg. Then
-     * create a new zephyr test for every BDD without a zephyr test. For existing Zephyr Tests update the Zephyr test
-     * with any local changes to the BDD
+     * Looks for all feature files from this top level directory or will just
+     * take a single feature file as arg. Then create a new zephyr test for
+     * every BDD without a zephyr test. For existing Zephyr Tests update the
+     * Zephyr test with any local changes to the BDD.
+     *
      * @param featureDir either a feature file or a directory to recursively look through for feature files
      */
     public void syncBddsWithZephyr(Path featureDir) {
@@ -197,7 +199,7 @@ public class StandaloneTool {
         FileUtils.findFeatures(filePath).forEach(feature -> new FeatureParser(feature).syncTestsWithZephyr());
     }
 
-    public static void setErrorsEncountered(Boolean errors){
+    public static void setErrorsEncountered(Boolean errors) {
         errorsEncountered = errors;
     }
 

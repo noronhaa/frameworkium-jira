@@ -1,8 +1,6 @@
 import cucumber.api.CucumberOptions;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 import cucumber.api.testng.AbstractTestNGCucumberTests;
+import org.testng.annotations.Test;
 
 @Test
 @CucumberOptions(

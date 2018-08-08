@@ -1,13 +1,11 @@
 package com.frameworkium.jira.api;
 
-import com.frameworkium.base.properties.Property;
-import io.restassured.response.Response;
 import com.frameworkium.jira.JiraConfig;
+import io.restassured.response.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 
 import java.io.File;
 
@@ -26,31 +24,32 @@ public class Issue {
     /**
      * Deletes an Issue
      */
-    public void delete(){
+    public void delete() {
         String endpoint = JiraConfig.JIRA_REST_PATH + "issue/" + issueKey;
         JiraConfig.getJIRARequestSpec()
                 .expect()
-                    .statusCode(204)
+                .statusCode(204)
                 .when()
-                    .delete(endpoint);
+                .delete(endpoint);
     }
 
 
     /**
      * Checks if the Issue exists
+     *
      * @return true is the issue exists
      */
-    public boolean found(){
+    public boolean found() {
 
-        String endpoint = JiraConfig.JIRA_REST_PATH  + "search?jql=issue=" + this.issueKey;
+        String endpoint = JiraConfig.JIRA_REST_PATH + "search?jql=issue=" + this.issueKey;
 
         int statuscode = JiraConfig.getJIRARequestSpec()
-                            .get(endpoint)
-                            .statusCode();
+                .get(endpoint)
+                .statusCode();
 
-        if (statuscode == 200){
+        if (statuscode == 200) {
             return true;
-        } else if (statuscode == 400){
+        } else if (statuscode == 400) {
             return false;
         } else {
             throw new IllegalStateException(
@@ -107,15 +106,16 @@ public class Issue {
     /**
      * Update a Zephyr Test Case. Puts bdd into 'description' field by default but can be overridden by jiraBddFieldKey
      * property
+     *
      * @param title - title of the Test case
-     * @param bdd - the bdd Given, When, Then steps
+     * @param bdd   - the bdd Given, When, Then steps
      */
-    public void updateZephyrTest(String title, String bdd){
+    public void updateZephyrTest(String title, String bdd) {
 
         JSONObject object = new JSONObject();
         JSONObject fields = new JSONObject();
         fields.put(JiraConfig.getBddFieldKey(), bdd); //field for custom 'bdd' field
-        fields.put("summary",title);
+        fields.put("summary", title);
         object.put("fields", fields);
 
         String endpoint = JiraConfig.JIRA_REST_PATH + "issue/" + this.issueKey;

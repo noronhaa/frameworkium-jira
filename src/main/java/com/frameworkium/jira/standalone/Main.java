@@ -13,18 +13,20 @@ public class Main {
         uploader.checkProperties(args);
 
         //Take appropriate action: update current zephyr tests or create new zephyr tests from BDDs
-        switch (args[0].toLowerCase()){
-            case "update" : uploader.uploadResultsFromCsv();
+        switch (args[0].toLowerCase()) {
+            case "update":
+                uploader.uploadResultsFromCsv();
                 break;
-            case "sync" : uploader.syncBddsWithZephyr();
+            case "sync":
+                uploader.syncBddsWithZephyr();
                 break;
             default:
                 throw new RuntimeException("Expected first arg keyword 'update' to update Zephyr tests or 'sync'" +
-                            " to create new Zephyr tests from feature files but got " + args[0]);
+                        " to create new Zephyr tests from feature files but got " + args[0]);
         }
 
         //Check if there have been errors and end with exit 1 code to indicate there were errors
-        if (StandaloneTool.isErrorsEncountered()){
+        if (StandaloneTool.isErrorsEncountered()) {
             System.exit(1);
         }
 

@@ -48,7 +48,7 @@ public class NewIssueBuilder {
         return this;
     }
 
-    public NewIssueBuilder setCustomField(String fieldName, Object fieldValue){
+    public NewIssueBuilder setCustomField(String fieldName, Object fieldValue) {
         //need the ID so query the api for all fields and look for the name and find the corresponding ID
         String fieldID = JiraTest.getFieldId(fieldName);
         customFields.put(fieldID, fieldValue);

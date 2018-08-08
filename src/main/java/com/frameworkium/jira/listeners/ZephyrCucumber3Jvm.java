@@ -51,7 +51,6 @@ public class ZephyrCucumber3Jvm implements Formatter {
 
     /**
      * When test run starts, check Zephyr cycle exists, if it doesn't, create a new cycle
-     * @param event
      */
     private void handleTestRunStarted(TestRunStarted event) {
         createZephyrTestCycle();
@@ -64,7 +63,6 @@ public class ZephyrCucumber3Jvm implements Formatter {
      * - If no Zephyr tag, create a new Zephyr Test
      * - Add (Zephyr) Test to Zephyr Test Cycle
      * - Update Test Execution Status to WIP
-     * @param event
      */
     private void handleTestCaseStarted(TestCaseStarted event) {
         logger.info("TestCaseStarted event");
@@ -84,7 +82,7 @@ public class ZephyrCucumber3Jvm implements Formatter {
 //            new FeatureParser(uri).addTagsToScenario(scenarioName, zephyrTag.get());
 //        }
 
-        if (zephyrTag.isPresent()){
+        if (zephyrTag.isPresent()) {
             //Add the current Zephyr test to the Zephyr Test Cycle
             addTestToZephyrCycle(zephyrTag.get());
 
@@ -103,15 +101,14 @@ public class ZephyrCucumber3Jvm implements Formatter {
      * On TestCaseFinished:
      * - Get Zephyr Tag from Scenario
      * - Update result status
-     * @param event
      */
     private void handleTestCaseFinished(TestCaseFinished event) {
         logger.info("TestCaseFinished event");
         String comment = UPDATE_COMMENT;
 
-        if (this.zephyrId != null){
+        if (this.zephyrId != null) {
             //Add stack trace of test if status not pass
-            if (!event.result.is(Result.Type.PASSED)){
+            if (!event.result.is(Result.Type.PASSED)) {
                 comment = comment + "\n" + event.result.getErrorMessage();
             }
 
@@ -123,8 +120,6 @@ public class ZephyrCucumber3Jvm implements Formatter {
         //reset the zephyr tag for next test run
         this.zephyrId = null;
     }
-
-
 
 
     //----Utility Methods----
@@ -140,7 +135,7 @@ public class ZephyrCucumber3Jvm implements Formatter {
         zephyrCycle.addTestsToCycle(addToCycleEntity);
     }
 
-    private void createZephyrTestCycle(){
+    private void createZephyrTestCycle() {
         zephyrCycle = new Cycle();
 
         String projectKey = Property.JIRA_PROJECT_KEY.getValue();
@@ -170,16 +165,16 @@ public class ZephyrCucumber3Jvm implements Formatter {
         }
     }
 
-    private String createZephyrTest(TestCaseStarted event){
+    private String createZephyrTest(TestCaseStarted event) {
         String projectKey = Property.JIRA_PROJECT_KEY.getValue();
-        String name= event.testCase.getName();
+        String name = event.testCase.getName();
         String steps = event.testCase.getTestSteps()
                 .stream()
                 .map(TestStep::getPickleStep)
                 .map(PickleStep::getText)
                 .map(step -> step + "\n")
                 .collect(Collectors.joining(","))
-                .replace(",","");
+                .replace(",", "");
 
         return new NewIssueBuilder()
                 .setKey(projectKey)
@@ -191,21 +186,27 @@ public class ZephyrCucumber3Jvm implements Formatter {
     }
 
 
-    private int getUpdateStatus(TestCaseFinished event){
+    private int getUpdateStatus(TestCaseFinished event) {
         Result.Type resultStatus = event.result.getStatus();
         int updateStatus = 0;
-        switch (resultStatus){
-            case PASSED : updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_PASS;
+        switch (resultStatus) {
+            case PASSED:
+                updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_PASS;
                 break;
-            case SKIPPED: updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_BLOCKED;
+            case SKIPPED:
+                updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_BLOCKED;
                 break;
-            case PENDING: updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_WIP;
+            case PENDING:
+                updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_WIP;
                 break;
-            case UNDEFINED: updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_BLOCKED;
+            case UNDEFINED:
+                updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_BLOCKED;
                 break;
-            case AMBIGUOUS: updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_BLOCKED;
+            case AMBIGUOUS:
+                updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_BLOCKED;
                 break;
-            case FAILED: updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_FAIL;
+            case FAILED:
+                updateStatus = JiraConfig.ZapiStatus.ZAPI_STATUS_FAIL;
                 break;
 
         }

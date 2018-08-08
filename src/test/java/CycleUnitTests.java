@@ -1,6 +1,4 @@
-import com.frameworkium.jira.zapi.cycle.AddToCycleEntity;
-import com.frameworkium.jira.zapi.cycle.Cycle;
-import com.frameworkium.jira.zapi.cycle.CycleEntity;
+import com.frameworkium.jira.zapi.cycle.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -10,18 +8,18 @@ import java.util.List;
 public class CycleUnitTests {
 
     @Test
-    public void canRetrieveProjectIdFromProjectKey(){
+    public void canRetrieveProjectIdFromProjectKey() {
         String projectKey = "TP";
         String expectedId = "16506";
 
         Cycle cycle = new Cycle();
         String actualId = cycle.getProjectIdByKey(projectKey);
 
-        Assert.assertEquals(actualId,expectedId);
+        Assert.assertEquals(actualId, expectedId);
     }
 
     @Test(dependsOnMethods = "canRetrieveProjectIdFromProjectKey")
-    public void canRetrieveSpecificVersionId(){
+    public void canRetrieveSpecificVersionId() {
         //get all versions, iterate through results to find id of version by issueType
 
         Cycle cycle = new Cycle();
@@ -35,12 +33,11 @@ public class CycleUnitTests {
         String actualVersionId = cycle.getVersionIdByName(projectId, versionName);
 
         Assert.assertEquals(actualVersionId, expectedVersionId);
-
     }
 
 
     @Test(dependsOnMethods = "canRetrieveProjectIdFromProjectKey")
-    public void canRetrieveSpecificVersionIdUsingVersionNameWIthDecimal(){
+    public void canRetrieveSpecificVersionIdUsingVersionNameWIthDecimal() {
         //get all versions, iterate through results to find id of version by issueType
 
         Cycle cycle = new Cycle();
@@ -53,12 +50,11 @@ public class CycleUnitTests {
         String actualVersionId = cycle.getVersionIdByName(projectId, versionName);
 
         Assert.assertEquals(actualVersionId, expectedVersionId);
-
     }
 
 
     @Test
-    public void successfullyCreatingCycleWillReturnAnID(){
+    public void successfullyCreatingCycleWillReturnAnID() {
         String versionId = "83930";
         String projectId = "16506";
 
@@ -76,12 +72,11 @@ public class CycleUnitTests {
 
         //Clean up and delete cycle
         cycle.deleteCycle(String.valueOf(cycleId));
-
     }
 
 
     @Test(dependsOnMethods = "successfullyCreatingCycleWillReturnAnID")
-    public void canAddTestsToATestCycle(){
+    public void canAddTestsToATestCycle() {
         List<String> issuesToAddToCycle = Collections.singletonList("TP-12601");
         String versionId = "83930";
         String projectId = "16506";
@@ -110,17 +105,15 @@ public class CycleUnitTests {
 
         //Clean up and delete cycle
         cycle.deleteCycle(String.valueOf(cycleId));
-
     }
 
     @Test(dependsOnMethods = "canAddTestsToATestCycle")
-    public void canAddTestToACycleThatIsAlreadyInTheCycleWithoutError(){
+    public void canAddTestToACycleThatIsAlreadyInTheCycleWithoutError() {
         List<String> issuesToAddToCycle = Collections.singletonList("TP-12601");
         String versionId = "83930";
         String projectId = "16506";
 
         Cycle cycle = new Cycle();
-        int cycleId;
 
         //create cycle
         CycleEntity cycleEntity = new CycleEntity();
@@ -146,8 +139,6 @@ public class CycleUnitTests {
 
         //Clean up and delete cycle
         cycle.deleteCycle(String.valueOf(cycleId));
-
-
     }
 
 }

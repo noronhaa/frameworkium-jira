@@ -1,9 +1,9 @@
 package com.frameworkium.jira.zapi;
 
-import com.frameworkium.jira.standalone.StandaloneTool;
-import io.restassured.response.Response;
 import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
+import com.frameworkium.jira.standalone.StandaloneTool;
+import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,7 +82,7 @@ public class Execution {
         if (idList.size() == 0) {
             logger.info("FAILED [{}] - Issue not found", issue);
             StandaloneTool.setErrorsEncountered(true);
-            return ;
+            return;
         }
 
         for (Integer executionId : idList) {
@@ -114,10 +114,10 @@ public class Execution {
             StandaloneTool.setErrorsEncountered(true);
         }
 
-        if (response !=null && response.statusCode() == 200){
-            logger.info("SUCCESS [{}] - updated status",issue);
+        if (response != null && response.statusCode() == 200) {
+            logger.info("SUCCESS [{}] - updated status", issue);
         } else {
-            logger.info("FAILED [{}] failed to update status",issue);
+            logger.info("FAILED [{}] failed to update status", issue);
             StandaloneTool.setErrorsEncountered(true);
         }
 
@@ -154,34 +154,34 @@ public class Execution {
         String path = REST_ZAPI_PATH
                 + "attachment?entityType=EXECUTION&entityId=" + executionId;
 
-        Map<String,Response> uploadResult = new HashMap<>();
+        Map<String, Response> uploadResult = new HashMap<>();
 
         Arrays.stream(attachments)
                 .filter(a -> !a.isEmpty())
                 .map(File::new)
                 .map(f -> {
-                    if (!f.exists()){
-                        logger.info("FAILED [{}] attachment file not found: {}",issue,f.getPath());
+                    if (!f.exists()) {
+                        logger.info("FAILED [{}] attachment file not found: {}", issue, f.getPath());
                         StandaloneTool.setErrorsEncountered(true);
                         return null;
-                    } else{
+                    } else {
                         return f;
                     }
                 })
                 .filter(Objects::nonNull)
                 .forEach(attachment -> uploadResult.put(attachment.getPath(),
-                    getJIRARequestSpec()
-                            .header("X-Atlassian-Token", "nocheck")
-                            .multiPart(attachment)
-                            .when()
-                            .post(path)
-        ));
+                        getJIRARequestSpec()
+                                .header("X-Atlassian-Token", "nocheck")
+                                .multiPart(attachment)
+                                .when()
+                                .post(path)
+                ));
 
-        uploadResult.forEach( (attachment, response) -> {
+        uploadResult.forEach((attachment, response) -> {
             if (response.getStatusCode() == 200) {
-                logger.info("SUCCESS [{}] Successfully added attachment: {}",issue,attachment);
+                logger.info("SUCCESS [{}] Successfully added attachment: {}", issue, attachment);
             } else {
-                logger.info("FAILED [{}] Failed to added attachment: {}",issue, attachment);
+                logger.info("FAILED [{}] Failed to added attachment: {}", issue, attachment);
                 StandaloneTool.setErrorsEncountered(true);
             }
         });

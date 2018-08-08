@@ -2,7 +2,6 @@ package com.frameworkium.jira.gherkin;
 
 import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.api.Issue;
-import gherkin.pickles.Pickle;
 import gherkin.pickles.PickleStep;
 import gherkin.pickles.PickleTag;
 
@@ -14,21 +13,20 @@ public class GherkinUtils {
 
     /**
      * remove @TestCaseId: if it is present from the tag
-     * @param zephyrTag
-     * @return
      */
-    private static String stripZephyrTag(String zephyrTag){
+    private static String stripZephyrTag(String zephyrTag) {
         return zephyrTag.replace(JiraConfig.ZEPHYR_TAG_PREFIX, "");
     }
 
 
     /**
      * Check through tags to see if there is one that contains a specific tag. Uses String.contains()
-     * @param tags list of tags to look through
+     *
+     * @param tags        list of tags to look through
      * @param expectedTag tag we are looking to find
      * @return true if there is a tag that contains the tag we are looking for
      */
-    public static boolean pickleContainsTag(List<PickleTag> tags, String expectedTag){
+    public static boolean pickleContainsTag(List<PickleTag> tags, String expectedTag) {
         return tags.stream()
                 .map(PickleTag::getName)
                 .anyMatch(tag -> tag.contains(expectedTag));
@@ -37,20 +35,18 @@ public class GherkinUtils {
 
     /**
      * Check each tag for a zephyr tag checking it contains @TestCaseId:<zephyr tag> then query zephyr to check tag exists
-     * @param pickle
-     * @return
      */
-    public static boolean pickleHasZephyrTag(List<PickleTag> tags){
+    public static boolean pickleHasZephyrTag(List<PickleTag> tags) {
         return getZephyrIdFromTags(tags).isPresent();
     }
 
     /**
      * Find any zephyr test id tags on the scenario and check zephyr for valid test
-     * @param pickle
+     *
      * @return the stripped zephyr id if present or Optional.empty if no zephyr id was found
      */
     //todo unit tests
-    public static Optional<String> getZephyrIdFromTags(List<PickleTag> tags){
+    public static Optional<String> getZephyrIdFromTags(List<PickleTag> tags) {
         return tags
                 .stream()
                 .map(PickleTag::getName)
@@ -60,12 +56,12 @@ public class GherkinUtils {
                 .findFirst();
     }
 
-    public static String generateBddFromSteps(List<PickleStep> steps){
+    public static String generateBddFromSteps(List<PickleStep> steps) {
         return steps.stream()
                 .map(PickleStep::getText)
                 .map(step -> step + "\n")
                 .collect(Collectors.joining(","))
-                .replace(",","");
+                .replace(",", "");
     }
 
 }

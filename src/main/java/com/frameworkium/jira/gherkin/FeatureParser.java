@@ -81,8 +81,8 @@ public class FeatureParser {
      * have a new Zepyhr test case created AND the the ID of the new Zephyr test case will be added to the corresponding
      * Scenario as a cucumber test. Scenarios with the @NoZephyr tag will not have a Zephyr test case created.
      */
-    public void syncTestsWithZephyr(){
-        Map<Boolean,List<Pickle>> groups = this.pickles
+    public void syncTestsWithZephyr() {
+        Map<Boolean, List<Pickle>> groups = this.pickles
                 .stream()
                 .collect(Collectors.partitioningBy(pickle -> GherkinUtils.pickleHasZephyrTag(pickle.getTags())));
 
@@ -90,7 +90,7 @@ public class FeatureParser {
         List<Pickle> noZephyrTag = groups.get(false);
 
         noZephyrTag.stream()
-                .filter(pickle -> !GherkinUtils.pickleContainsTag(pickle.getTags(),JiraConfig.NO_UPLOAD_TO_ZEPHYR))
+                .filter(pickle -> !GherkinUtils.pickleContainsTag(pickle.getTags(), JiraConfig.NO_UPLOAD_TO_ZEPHYR))
                 .forEach(pickle -> {
                     String zId = addTestToZephyr(pickle);
                     addTagsToScenario(pickle, zId);
@@ -103,9 +103,9 @@ public class FeatureParser {
                 });
     }
 
-
     /**
      * Create a new Zephyr Test Case
+     *
      * @param pickle the pickle form of a Scenario use to create a Zephyr Test Case
      * @return the Zephyr ID of the newly created Test Case
      */
@@ -124,14 +124,14 @@ public class FeatureParser {
                 .create();
     }
 
-
     /**
      * Overloaded Method of addTagsToScenario(String scenarioName, String zephyrId) that takes a pickle instead of string
      * for scenario name
-     * @param pickle aka scenario you want to update
+     *
+     * @param pickle   aka scenario you want to update
      * @param zephyrId Zephyr ID that we need to add to scenario as
      */
-    public void addTagsToScenario(Pickle pickle, String zephyrId){
+    public void addTagsToScenario(Pickle pickle, String zephyrId) {
         String scenarioNameToUpdate = pickle.getName();
 
         addTagsToScenario(scenarioNameToUpdate, zephyrId);
@@ -144,14 +144,15 @@ public class FeatureParser {
      * 3 - replace that line with a line with the tag followed by original scenario line
      * 4 - transform stream of strings to bytes
      * 5 - write bytes to original file (overwrite)
+     *
      * @param scenarioName name of scenario to look for
-     * @param zephyrId ID of Zephyr test
+     * @param zephyrId     ID of Zephyr test
      */
-    public void addTagsToScenario(String scenarioName, String zephyrId){
+    public void addTagsToScenario(String scenarioName, String zephyrId) {
         String tag = JiraConfig.ZEPHYR_TAG_PREFIX + zephyrId;
 
         //regex to match: (any number of white space)Scenario:(0 or 1 whitespace)(issueType of scenario)
-        String scenarioTitle = String.format("( *)%s( ?)%s",SCENARIO_KEYWORD, scenarioName);
+        String scenarioTitle = String.format("( *)%s( ?)%s", SCENARIO_KEYWORD, scenarioName);
         String scenarioLine = INDENTATION + SCENARIO_KEYWORD + " " + scenarioName;
 
         try {

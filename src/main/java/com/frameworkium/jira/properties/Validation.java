@@ -12,9 +12,8 @@ public class Validation {
 
     /**
      * Check that all Properties required to integrate with Zephyr are present: resultVersion, zapiCycleName, jiraProjectKey
-     * @return
      */
-    public static boolean zephyrDetailsPresent(){
+    public static boolean zephyrDetailsPresent() {
         boolean versionSpecified = Property.RESULT_VERSION.isSpecified();
         boolean cycleNameSpecified = Property.ZAPI_CYCLE_REGEX.isSpecified();
         boolean projectKeySpecified = Property.JIRA_PROJECT_KEY.isSpecified();
@@ -25,7 +24,7 @@ public class Validation {
         if (!cycleNameSpecified) {
             logger.error("Property missing for Zephyr Test Cycle: zapiCycleName");
         }
-        if (!projectKeySpecified){
+        if (!projectKeySpecified) {
             logger.error("Property missing for Jira Project Key: jiraProjectKey");
         }
 
@@ -36,7 +35,7 @@ public class Validation {
      * Check that the Jira/Zephyr properties are correct and we can successfully connect to Jira. Requires:
      * jiraUsername, jiraPassword, jiraURL
      */
-    public static boolean authenticateJira(){
+    public static boolean authenticateJira() {
         boolean canAuthenticate = false;
         boolean usernameSpecified = Property.JIRA_USERNAME.isSpecified();
         boolean passwordSpecified = Property.JIRA_PASSWORD.isSpecified();
@@ -48,14 +47,14 @@ public class Validation {
         if (!passwordSpecified) {
             logger.error("Property missing for JIRA Password: jiraPassword");
         }
-        if (!jiraUrlSpecified){
+        if (!jiraUrlSpecified) {
             logger.error("Property missing for JIRA URL: jiraURL");
         }
 
-        if (jiraUrlSpecified && usernameSpecified && passwordSpecified){
+        if (jiraUrlSpecified && usernameSpecified && passwordSpecified) {
             Response response = JiraConfig.getJIRARequestSpec().get("/rest/auth/1/session");
 
-            if (response.statusCode() != 200){
+            if (response.statusCode() != 200) {
                 logger.error("Could not authenticate to JIRA, expected 200 but got " + response.statusCode());
             } else {
                 canAuthenticate = true;
@@ -66,7 +65,7 @@ public class Validation {
 
     }
 
-    public static boolean allPropertiesPresent(){
+    public static boolean allPropertiesPresent() {
         return zephyrDetailsPresent() && authenticateJira();
     }
 
