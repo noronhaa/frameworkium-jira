@@ -1,11 +1,6 @@
 package com.frameworkium.jira.zapi.cycle;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-
 import java.util.List;
-import java.util.Optional;
 
 /**
  * This API will execute based on following conditions:
@@ -16,20 +11,12 @@ import java.util.Optional;
  * 3	From another cycle required following params:
  * (assigneeType, cycleId, issues, method = 3, projectId, versionId, components, fromCycleId, fromVersionId, hasDefects, labels, priorities, statuses)
  */
-@Data @AllArgsConstructor
 public class AddToCycleEntity {
 
-    private String cycleId;
-
-    private List<String> issues;
-
-    @Builder.Default
-    private String method = "1";
-
-    private String projectId;
-
-    private int versionId;
-
-
+    public String cycleId;
+    public List<String> issues;
+    public String method = "1";
+    public String projectId;
+    public int versionId;
 
 }

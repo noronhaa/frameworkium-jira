@@ -1,22 +1,15 @@
 package com.frameworkium.jira.api;
 
 import com.frameworkium.jira.JiraConfig;
-import gherkin.deps.com.google.gson.JsonObject;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
-import org.testng.util.Strings;
 
-import java.util.HashMap;
-
-import static com.frameworkium.jira.JiraConfig.JIRA_REST_PATH;
+import java.util.Map;
 
 /**
  * Class for creating a new Jira Issue
  */
-@Data @AllArgsConstructor
 public class NewIssue {
 
     private static final Logger logger = LogManager.getLogger();
@@ -25,21 +18,21 @@ public class NewIssue {
 //    public static final String CUSTOM_ORIGIN_FIELD_ID = "customfield_11841"; // where the isssue was found   (for a bug)
 //    public static final String CUSTOM_ORIGIN_FIELD_CLIENT_VALUE = "23212";
 
-    private String key; //Project Key eg TP from TP-12345
-    private String summary; //summary or title field of the ticket
-    private String description; // description field
-    private IssueType issueType; // Type of issue eg Test, Bug, Task
-    private String bddField;
-    private JiraConfig.Priority priority; //priority of issue
-    private String[] labels; // Jira labels to add if any
-    private HashMap<String, Object> customfields; // Many fields are not default jira fields, we can also add these
+    String key; //Project Key eg TP from TP-12345
+    String summary; //summary or title field of the ticket
+    String description; // description field
+    IssueType issueType; // Type of issue eg Test, Bug, Task
+    String bddField;
+    JiraConfig.Priority priority; //priority of issue
+    String[] labels; // Jira labels to add if any
+    Map<String, Object> customFields; // Many fields are not default jira fields, we can also add these
 
     /**
      * Generated the Json payload to create a new Issue
-     * @return
      */
-    private String generateJson(){
+    private String generateJson() {
 
+        // TODO: make this work with GSON etc.
         JSONObject object = new JSONObject();
         JSONObject fields = new JSONObject();
 
@@ -69,7 +62,7 @@ public class NewIssue {
             fields.put("labels", this.labels);
         }
 
-        customfields.forEach(fields::put);
+        customFields.forEach(fields::put);
 
         if (priority !=null){
             JSONObject priority = new JSONObject();
@@ -85,6 +78,7 @@ public class NewIssue {
     }
 
 
+    // TODO: create doesn't belong here, should separate out the data from the create
     /**
      * Send POST request to create new Jira Issue
      * @return

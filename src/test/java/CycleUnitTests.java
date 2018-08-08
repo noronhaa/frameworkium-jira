@@ -66,7 +66,10 @@ public class CycleUnitTests {
         int cycleId;
 
         //build request body
-        CycleEntity cycleEntity = new CycleEntity("Auto Test Cycle 1",projectId,versionId);
+        CycleEntity cycleEntity = new CycleEntity();
+        cycleEntity.name = "Auto Test Cycle 1";
+        cycleEntity.projectId = projectId;
+        cycleEntity.versionId = versionId;
 
         //execute request
         cycleId = cycle.createNewCycle(cycleEntity);
@@ -87,18 +90,20 @@ public class CycleUnitTests {
         int cycleId;
 
         //create cycle
-        CycleEntity cycleEntity = new CycleEntity("Auto Test Cycle 1",projectId,versionId);
+        CycleEntity cycleEntity = new CycleEntity();
+        cycleEntity.name = "Auto Test Cycle 1";
+        cycleEntity.projectId = projectId;
+        cycleEntity.versionId = versionId;
         cycleId = cycle.createNewCycle(cycleEntity);
 
 
         //Create addToCycleEntity
-        AddToCycleEntity addToCycleEntity = new AddToCycleEntity(
-                String.valueOf(cycleId),
-                issuesToAddToCycle,
-                "1",
-                projectId,
-                Integer.valueOf(versionId)
-        );
+        AddToCycleEntity addToCycleEntity = new AddToCycleEntity();
+        addToCycleEntity.cycleId = String.valueOf(cycleId);
+        addToCycleEntity.issues = issuesToAddToCycle;
+        addToCycleEntity.method = "1";
+        addToCycleEntity.projectId = projectId;
+        addToCycleEntity.versionId = Integer.valueOf(versionId);
 
         //add tests to cycle
         cycle.addTestsToCycle(addToCycleEntity);
@@ -118,18 +123,20 @@ public class CycleUnitTests {
         int cycleId;
 
         //create cycle
-        CycleEntity cycleEntity = new CycleEntity("Auto Test Cycle 1",projectId,versionId);
-        cycleId = cycle.createNewCycle(cycleEntity);
+        CycleEntity cycleEntity = new CycleEntity();
+        cycleEntity.name = "Auto Test Cycle 1";
+        cycleEntity.projectId = projectId;
+        cycleEntity.versionId = versionId;
+        int cycleId = cycle.createNewCycle(cycleEntity);
 
 
         //Create addToCycleEntity
-        AddToCycleEntity addToCycleEntity = new AddToCycleEntity(
-                String.valueOf(cycleId),
-                issuesToAddToCycle,
-                "1",
-                projectId,
-                Integer.valueOf(versionId)
-        );
+        AddToCycleEntity addToCycleEntity = new AddToCycleEntity();
+        addToCycleEntity.cycleId = String.valueOf(cycleId);
+        addToCycleEntity.issues = issuesToAddToCycle;
+        addToCycleEntity.method = "1";
+        addToCycleEntity.projectId = projectId;
+        addToCycleEntity.versionId = Integer.valueOf(versionId);
 
         //add tests to cycle
         cycle.addTestsToCycle(addToCycleEntity);

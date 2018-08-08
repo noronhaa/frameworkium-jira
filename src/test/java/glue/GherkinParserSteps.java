@@ -5,45 +5,36 @@ import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.gherkin.FeatureParser;
 import com.frameworkium.jira.gherkin.GherkinUtils;
 import com.frameworkium.jira.zapi.Execution;
-import com.frameworkium.jira.zapi.cycle.AddToCycleEntity;
-import com.frameworkium.jira.zapi.cycle.Cycle;
-import com.frameworkium.jira.zapi.cycle.CycleEntity;
-import cucumber.api.java.en.And;
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
-import cucumber.api.java.en.When;
+import com.frameworkium.jira.zapi.cycle.*;
+import cucumber.api.java.en.*;
 import gherkin.pickles.Pickle;
 import org.testng.Assert;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class GherkinParserSteps {
 
-    public static final String FEATURE_DIR = "src/test/resources/gherkinParser/features/";
-    GherkinUtils gherkinUtils = new GherkinUtils();
+    private static final String FEATURE_DIR = "src/test/resources/gherkinParser/features/";
 
-    private String featurePath;
+    private Path featurePath;
     private int cycleId;
 
     /**
      * Make copy of a base feature which will be used as the feature under test keeping original intact
-     * @param baseFile
      */
-    private void setupTestFeature(String baseFile){
-        String featureUnderTest = FEATURE_DIR + "featureUnderTest.feature";
+    private void setupTestFeature(String baseFile) {
+        Path featureUnderTest = Paths.get(FEATURE_DIR + "featureUnderTest.feature");
         try {
-            Files.write(Paths.get(featureUnderTest),FileUtils.readFile(baseFile).getBytes());
+            Files.write(featureUnderTest, FileUtils.readFile(baseFile).getBytes());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
 
         featurePath = featureUnderTest;
-
     }
 
     @Given("^I have a scenario that does NOT contain a zephyr tag$")
@@ -55,8 +46,8 @@ public class GherkinParserSteps {
     @Given("^I have a multiple scenarios that do NOT contain a zephyr tag$")
     public void iHaveAMultipleScenariosThatDoNOTContainAZephyrTag() throws Throwable {
         String baseFile = FEATURE_DIR + "multipleScenarios1Zid.feature";
-        String featureUnderTest = FEATURE_DIR + "featureUnderTest.feature";
-        Files.write(Paths.get(featureUnderTest),FileUtils.readFile(baseFile).getBytes());
+        Path featureUnderTest = Paths.get(FEATURE_DIR + "featureUnderTest.feature");
+        Files.write(featureUnderTest, FileUtils.readFile(baseFile).getBytes());
 
         featurePath = featureUnderTest;
     }
@@ -72,10 +63,8 @@ public class GherkinParserSteps {
         FeatureParser parser = new FeatureParser(featurePath);
 
         parser.getPickles().stream()
-                .filter(pickle1 -> !GherkinUtils.pickleHasZephyrTag(pickle1.getTags()))
-                .forEach(pickle -> {
-                    parser.addTagsToScenario(pickle, zId);
-                });
+                .filter(pickle -> !GherkinUtils.pickleHasZephyrTag(pickle.getTags()))
+                .forEach(pickle -> parser.addTagsToScenario(pickle, zId));
 
     }
 
@@ -91,9 +80,9 @@ public class GherkinParserSteps {
 
 
         String expectedFeature = FileUtils.readFile(expectedPath);
-        String actualFeature =  FileUtils.readFile(featurePath);
-    //todo need to match regex? of get zID and parse that in to assert against?
-        Assert.assertEquals(actualFeature,expectedFeature);
+        String actualFeature = FileUtils.readFile(featurePath);
+        //todo need to match regex? of get zID and parse that in to assert against?
+        Assert.assertEquals(actualFeature, expectedFeature);
     }
 
 
@@ -109,8 +98,8 @@ public class GherkinParserSteps {
 
     @Then("^a new test in zephyr will be created for the test not in zephyr$")
     public void aNewTestInZephyrWillBeCreatedForTheTestNotInZephyr() {
-       FeatureParser featureParser = new FeatureParser(featurePath);
-       featureParser.syncTestsWithZephyr();
+        FeatureParser featureParser = new FeatureParser(featurePath);
+        featureParser.syncTestsWithZephyr();
     }
 
     private String projectId;
@@ -121,32 +110,35 @@ public class GherkinParserSteps {
         Cycle cycle = new Cycle();
 
         projectId = cycle.getProjectIdByKey("TP");
-        versionId = cycle.getVersionIdByName(projectId,"ARGON");
+        versionId = cycle.getVersionIdByName(projectId, "ARGON");
 
-        CycleEntity cycleEntity = new CycleEntity("E2E Automation Cycle",projectId,versionId);
+        CycleEntity cycleEntity = new CycleEntity();
+        cycleEntity.name = "E2E Automation Cycle";
+        cycleEntity.projectId = projectId;
+        cycleEntity.versionId = versionId;
 
         this.cycleId = cycle.createNewCycle(cycleEntity);
-        System.out.println(String.format("[Z Cycle Id: %s]",cycleId));
-        System.out.println(String.format("[projectId Id: %s]",projectId));
-        System.out.println(String.format("[version Id: %s]",versionId));
+        System.out.println(String.format("[Z Cycle Id: %s]", cycleId));
+        System.out.println(String.format("[projectId Id: %s]", projectId));
+        System.out.println(String.format("[version Id: %s]", versionId));
     }
 
     @And("^the tests will be added to the new cycle$")
     public void theTestsWillBeAddedToTheNewCycle() {
         FeatureParser parser = new FeatureParser(featurePath);
         List<String> zephyrIds = parser.getPickles().stream()
-                            .map(Pickle::getTags)
-                            .filter(GherkinUtils::pickleHasZephyrTag)
-                            .map(GherkinUtils::getZephyrIdFromTags)
-                            .map(Optional::get)
-                            .collect(Collectors.toList());
+                .map(Pickle::getTags)
+                .filter(GherkinUtils::pickleHasZephyrTag)
+                .map(GherkinUtils::getZephyrIdFromTags)
+                .map(Optional::get)
+                .collect(Collectors.toList());
 
-        AddToCycleEntity addToCycleEntity = new AddToCycleEntity(
-                String.valueOf(this.cycleId),
-                zephyrIds,
-                "1",
-                projectId,
-                Integer.valueOf(versionId));
+        AddToCycleEntity addToCycleEntity = new AddToCycleEntity();
+        addToCycleEntity.cycleId = String.valueOf(this.cycleId);
+        addToCycleEntity.issues = zephyrIds;
+        addToCycleEntity.projectId = "1";
+        addToCycleEntity.projectId = projectId;
+        addToCycleEntity.versionId = Integer.valueOf(versionId);
 
         new Cycle().addTestsToCycle(addToCycleEntity);
     }
@@ -161,10 +153,10 @@ public class GherkinParserSteps {
                 .map(GherkinUtils::getZephyrIdFromTags)
                 .filter(Optional::isPresent)
                 .forEach(zephyrTest -> {
-                                        System.out.println("trying to update zephyr test: " + zephyrTest);
-                                        new Execution(zephyrTest.get())
-                                                .update(JiraConfig.ZapiStatus.ZAPI_STATUS_PASS, "update by automation");
-                        });
+                    System.out.println("trying to update zephyr test: " + zephyrTest);
+                    new Execution(zephyrTest.get())
+                            .update(JiraConfig.ZapiStatus.ZAPI_STATUS_PASS, "update by automation");
+                });
     }
 
 //    @After

@@ -1,25 +1,20 @@
 package com.frameworkium.jira.zapi.cycle;
 
-import lombok.NonNull;
-import lombok.Builder;
-import lombok.Data;
-
 /**
  * Object for creating a test cycle, required fields are issueType, projectId, versionId. These are the minimum required to
  * create a test cycle. All other fields are optional.
  */
-@Data
 public class CycleEntity {
 
-    private String clonedCycleId;
-    @NonNull private String name;
-    private String build;
-    private String environment;
-    private String description;
-    private String startDate;
-    private String endDate;
-    @NonNull private String projectId;
-    @NonNull private String versionId;
-    @Builder.Default private Object sprintId = null;
+    public String clonedCycleId;
+    public String name;
+    public String build;
+    public String environment;
+    public String description;
+    public String startDate;
+    public String endDate;
+    public String projectId;
+    public String versionId;
+    public Object sprintId;
 
 }

@@ -4,15 +4,13 @@ import com.frameworkium.base.properties.Property;
 import com.frameworkium.jira.JiraConfig;
 import com.frameworkium.jira.api.NewIssue;
 import com.frameworkium.jira.api.NewIssueBuilder;
-import com.frameworkium.jira.gherkin.FeatureParser;
 import com.frameworkium.jira.gherkin.GherkinUtils;
 import com.frameworkium.jira.properties.Validation;
 import com.frameworkium.jira.zapi.Execution;
-import com.frameworkium.jira.zapi.cycle.AddToCycleEntity;
-import com.frameworkium.jira.zapi.cycle.Cycle;
-import com.frameworkium.jira.zapi.cycle.CycleEntity;
+import com.frameworkium.jira.zapi.cycle.*;
 import com.google.common.collect.ImmutableList;
-import cucumber.api.*;
+import cucumber.api.Result;
+import cucumber.api.TestStep;
 import cucumber.api.event.*;
 import cucumber.api.formatter.Formatter;
 import gherkin.pickles.PickleStep;
@@ -20,7 +18,8 @@ import gherkin.pickles.PickleTag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ZephyrCucumber3Jvm implements Formatter {
@@ -131,46 +130,44 @@ public class ZephyrCucumber3Jvm implements Formatter {
     //----Utility Methods----
 
 
-    private void addTestToZephyrCycle(String zephyrTag){
-        AddToCycleEntity addToCycleEntity = new AddToCycleEntity(
-                String.valueOf(zephyrCycleId),
-                ImmutableList.of(zephyrTag),
-                "1",
-                projectId,
-                Integer.valueOf(versionId)
-        );
-
+    private void addTestToZephyrCycle(String zephyrTag) {
+        AddToCycleEntity addToCycleEntity = new AddToCycleEntity();
+        addToCycleEntity.cycleId = String.valueOf(zephyrCycleId);
+        addToCycleEntity.issues = ImmutableList.of(zephyrTag);
+        addToCycleEntity.cycleId = "1";
+        addToCycleEntity.projectId = projectId;
+        addToCycleEntity.versionId = Integer.valueOf(versionId);
         zephyrCycle.addTestsToCycle(addToCycleEntity);
     }
 
     private void createZephyrTestCycle(){
         zephyrCycle = new Cycle();
 
-            String projectKey = Property.JIRA_PROJECT_KEY.getValue();
-            String version = Property.RESULT_VERSION.getValue();
-            String cycleName = Property.ZAPI_CYCLE_REGEX.getValue();
+        String projectKey = Property.JIRA_PROJECT_KEY.getValue();
+        String version = Property.RESULT_VERSION.getValue();
+        String cycleName = Property.ZAPI_CYCLE_REGEX.getValue();
 
-            projectId = zephyrCycle.getProjectIdByKey(projectKey);
-            versionId = zephyrCycle.getVersionIdByName(projectId, version);
+        projectId = zephyrCycle.getProjectIdByKey(projectKey);
+        versionId = zephyrCycle.getVersionIdByName(projectId, version);
 
-            //get cycle id if the cycle exists, return -2 if it does not exist
-            int cycleExist = zephyrCycle.cycleExists(projectKey,version,cycleName);
+        //get cycle id if the cycle exists, return -2 if it does not exist
+        int cycleExist = zephyrCycle.cycleExists(projectKey, version, cycleName);
 
-            //if the cycle does not exist (-2) then create the Zephyr Test Cycle
-            if (cycleExist == -2){
+        //if the cycle does not exist (-2) then create the Zephyr Test Cycle
+        if (cycleExist == -2) {
 
-                //create new cycle details object
-                CycleEntity cycleEntity = new CycleEntity(
-                        cycleName,
-                        projectId,
-                        versionId);
+            //create new cycle details object
+            CycleEntity cycleEntity = new CycleEntity();
+            cycleEntity.name = cycleName;
+            cycleEntity.projectId = projectId;
+            cycleEntity.versionId = versionId;
 
-                //create new cycle returning cycle Id
-                zephyrCycleId = zephyrCycle.createNewCycle(cycleEntity);
-            } else {
-                //assign id of existing cycle
-                zephyrCycleId = cycleExist;
-            }
+            //create new cycle returning cycle Id
+            zephyrCycleId = zephyrCycle.createNewCycle(cycleEntity);
+        } else {
+            //assign id of existing cycle
+            zephyrCycleId = cycleExist;
+        }
     }
 
     private String createZephyrTest(TestCaseStarted event){

@@ -39,7 +39,7 @@ public class Cycle {
                                     .post(REST_ZAPI_PATH + CYCLE_ENDPOINT)
                                 .thenReturn().jsonPath().getInt("id");
 
-        logger.info(String.format("Zephyr Cycle created: %s [ID:%s]",cycleEntity.getName(),cycleId));
+        logger.info(String.format("Zephyr Cycle created: %s [ID:%s]", cycleEntity.name, cycleId));
 
         return cycleId;
     }
@@ -58,13 +58,14 @@ public class Cycle {
 
         String projectId = getProjectIdByKey(projectKey);
         String versionId = getVersionIdByName(projectId, versionName);
-        int cycleId = -2; // -1 reserved for adhock cycleId
+        int cycleId = -2; // -1 reserved for adhoc cycleId
 
         String endpoint = String.format("%s%s?projectId=%s&versionId=%s",
                 REST_ZAPI_PATH,CYCLE_ENDPOINT,projectId,versionId);
 
         logger.debug("endpoint: "+ Property.JIRA_URL.getValue() + endpoint);
 
+        // TODO use DTOs not Object
         HashMap<String, Object> result =
                 JiraConfig.getJIRARequestSpec()
                     .given()
@@ -171,8 +172,8 @@ public class Cycle {
                     .post(endpoint);
 
         logger.info(String.format("Zephyr Tests added to Cycle: %s -> %s",
-                addToCycleEntity.getIssues().toString(),
-                addToCycleEntity.getCycleId()));
+                addToCycleEntity.issues.toString(),
+                addToCycleEntity.cycleId));
     }
 
 

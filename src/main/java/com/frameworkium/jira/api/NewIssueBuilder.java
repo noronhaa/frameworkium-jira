@@ -61,7 +61,16 @@ public class NewIssueBuilder {
     }
 
     public NewIssue createNewIssue() {
-        return new NewIssue(key, summary, description, issueType, bddField, priority, labels, customFields);
+        NewIssue newIssue = new NewIssue();
+        newIssue.key = key;
+        newIssue.summary = summary;
+        newIssue.description = description;
+        newIssue.issueType = issueType;
+        newIssue.bddField = bddField;
+        newIssue.priority = priority;
+        newIssue.labels = labels;
+        newIssue.customFields = customFields;
+        return newIssue;
     }
 
 }

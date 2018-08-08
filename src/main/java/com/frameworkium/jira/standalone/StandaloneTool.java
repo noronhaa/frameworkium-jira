@@ -8,61 +8,40 @@ import com.frameworkium.jira.zapi.Execution;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class StandaloneTool {
 
-    private String filePath;
+    private Path filePath;
     private static final String COMMA = ",";
     private static boolean errorsEncountered = false;
 
     private final Logger logger = LogManager.getLogger();
 
     public StandaloneTool(String filePath) {
+        this.filePath = Paths.get(filePath);
+    }
+
+    public StandaloneTool(Path filePath) {
         this.filePath = filePath;
     }
 
-
-    //for test purposes only
-    public static void main(String[] args) {
-
-        String[] testArgs = {"src/test/resources/csv/noAttachment.csv",
-                "",
-                "",
-                "",
-                "MSS Automation",
-                "dummy cycle"};
-
-        entryPointForDebugging(testArgs);
-    }
-
-    private static void entryPointForDebugging(String[] args){
-        StandaloneTool uploader = new StandaloneTool(args[1]);
-        uploader.checkArgs(args);
-        uploader.checkProperties(args);
-        uploader.uploadResultsFromCsv();
-    }
-
-
     /**
      * Take the Jira & Zephyr parameters from the CLI and set as system properties
-     * @param jiraURL
-     * @param jiraUsername
-     * @param jiraPassword
-     * @param resultVersion
-     * @param zapiCycleRegEx
      */
-    private static void setProperties(String jiraURL, String jiraUsername, String jiraPassword, String resultVersion,
-                                      String zapiCycleRegEx){
-        System.setProperty("jiraURL",jiraURL);
-        System.setProperty("jiraUsername",jiraUsername);
-        System.setProperty("jiraPassword",jiraPassword);
-        System.setProperty("resultVersion",resultVersion);
-        System.setProperty("zapiCycleRegEx",zapiCycleRegEx);
+    private static void setProperties(
+            String jiraURL, String jiraUsername, String jiraPassword,
+            String resultVersion, String zapiCycleRegEx) {
 
+        System.setProperty("jiraURL", jiraURL);
+        System.setProperty("jiraUsername", jiraUsername);
+        System.setProperty("jiraPassword", jiraPassword);
+        System.setProperty("resultVersion", resultVersion);
+        System.setProperty("zapiCycleRegEx", zapiCycleRegEx);
     }
 
     /**
@@ -72,9 +51,9 @@ public class StandaloneTool {
 
         logger.info("Starting Zephyr update");
 
-        collectTests()
-                .forEach(test ->
-                    new Execution(test.getKey()).update(test.getStatus(), test.getComment(), test.getAttachment()));
+        collectTests().forEach(test ->
+                new Execution(test.getKey())
+                        .update(test.getStatus(), test.getComment(), test.getAttachment()));
 
         logger.info("Zephyr update complete");
 
@@ -83,41 +62,36 @@ public class StandaloneTool {
         }
     }
 
-    public List<ZephyrTestObject> collectTests(){
-
-        File csvFile = new File(this.filePath);
-
-        try (InputStream inputStream = new FileInputStream(csvFile);
-             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));){
-
-            return br.lines()
+    public List<ZephyrTestObject> collectTests() {
+        try {
+            return Files.lines(filePath)
                     .map(mapToZephyrTestObject)
                     .collect(Collectors.toList());
-
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            throw new CsvException(e);
         }
-
     }
 
     /**
      * function to take a line of the csv and map it to a ZephyrTestObject
      */
     private Function<String, ZephyrTestObject> mapToZephyrTestObject = (line) -> {
-        String[] args = line.split(COMMA,-1);
-        int commas = (int) line.chars().filter(ch -> ch == ',').count();
-        if (commas < 4){
-            //there is no extra comma in the comment section so no need to handle
-           return new ZephyrTestObject(args[0],args[1],args[2],args[3]);
+        String[] args = line.split(COMMA, -1);
+        long commas = (int) line.chars().filter(ch -> ch == ',').count();
+        if (commas < 2) {
+            throw new CsvException("Not enough columns");
+        }
+
+        String id = args[0];
+        String passStatus = args[1];
+        if (commas == 3) {
+            return new ZephyrTestObject(id, passStatus, args[2], args[3]);
         } else {
             //contains a comma in the comment section so we need to handle this
-            String id = args[0];
-            String passStatus = args[1];
-            line = line.substring(id.length() + passStatus.length());
-            String[] commentAndAttachment = handleCommaInComment(line);
-
-            return new ZephyrTestObject(id,passStatus,commentAndAttachment[0],commentAndAttachment[1]);
+            String lineRemainder = line.substring(id.length() + passStatus.length() + 1);
+            String[] commentAndAttachment = handleCommaInComment(lineRemainder);
+            return new ZephyrTestObject(
+                    id, passStatus, commentAndAttachment[0], commentAndAttachment[1]);
         }
     };
 
@@ -166,7 +140,7 @@ public class StandaloneTool {
             throw new ArrayIndexOutOfBoundsException();
         }
 
-        return new String[]{comment,attachments};
+        return new String[]{comment, attachments};
 
     }
 
@@ -215,12 +189,12 @@ public class StandaloneTool {
      * with any local changes to the BDD
      * @param featureDir either a feature file or a directory to recursively look through for feature files
      */
-    public void syncBddsWithZephyr(String featureDir){
+    public void syncBddsWithZephyr(Path featureDir) {
         FileUtils.findFeatures(featureDir).forEach(feature -> new FeatureParser(feature).syncTestsWithZephyr());
     }
 
-    public void syncBddsWithZephyr(){
-        FileUtils.findFeatures(this.filePath).forEach(feature -> new FeatureParser(feature).syncTestsWithZephyr());
+    public void syncBddsWithZephyr() {
+        FileUtils.findFeatures(filePath).forEach(feature -> new FeatureParser(feature).syncTestsWithZephyr());
     }
 
     public static void setErrorsEncountered(Boolean errors){
