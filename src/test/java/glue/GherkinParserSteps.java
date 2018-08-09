@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 
 public class GherkinParserSteps {
 
-    private static final String FEATURE_DIR = "src/test/resources/gherkinParser/features/";
+    private static final Path FEATURE_DIR =
+            Paths.get("src/test/resources/gherkinParser/features/");
 
     private Path featurePath;
     private int cycleId;
@@ -26,8 +27,8 @@ public class GherkinParserSteps {
     /**
      * Make copy of a base feature which will be used as the feature under test keeping original intact
      */
-    private void setupTestFeature(String baseFile) {
-        Path featureUnderTest = Paths.get(FEATURE_DIR + "featureUnderTest.feature");
+    private void setupTestFeature(Path baseFile) {
+        Path featureUnderTest = FEATURE_DIR.resolve("featureUnderTest.feature");
         try {
             Files.write(featureUnderTest, FileUtils.readFile(baseFile).getBytes());
         } catch (IOException e) {
@@ -39,14 +40,14 @@ public class GherkinParserSteps {
 
     @Given("^I have a scenario that does NOT contain a zephyr tag$")
     public void iHaveAScenarioThatDoesNOTContainAZephyrTag() {
-        String testFeature = "src/test/resources/gherkinParser/features/editFeature.feature";
+        Path testFeature = Paths.get("src/test/resources/gherkinParser/features/editFeature.feature");
         setupTestFeature(testFeature);
     }
 
     @Given("^I have a multiple scenarios that do NOT contain a zephyr tag$")
     public void iHaveAMultipleScenariosThatDoNOTContainAZephyrTag() throws Throwable {
-        String baseFile = FEATURE_DIR + "multipleScenarios1Zid.feature";
-        Path featureUnderTest = Paths.get(FEATURE_DIR + "featureUnderTest.feature");
+        Path baseFile = FEATURE_DIR.resolve("multipleScenarios1Zid.feature");
+        Path featureUnderTest = FEATURE_DIR.resolve("featureUnderTest.feature");
         Files.write(featureUnderTest, FileUtils.readFile(baseFile).getBytes());
 
         featurePath = featureUnderTest;
@@ -65,7 +66,6 @@ public class GherkinParserSteps {
         parser.getPickles().stream()
                 .filter(pickle -> !GherkinUtils.pickleHasZephyrTag(pickle.getTags()))
                 .forEach(pickle -> parser.addTagsToScenario(pickle, zId));
-
     }
 
     @Then("^a new zephyr test will be created$")
@@ -73,18 +73,15 @@ public class GherkinParserSteps {
         // todo when zephyr functionality implemented
     }
 
-
     @And("^the feature will be successfully updated and match \"([^\"]*)\"$")
     public void theScenarioWillBeSuccessfullyUpdatedAndMatch(String relPath) {
-        String expectedPath = "src/test/resources/" + relPath;
-
+        Path expectedPath = Paths.get("src/test/resources/" + relPath);
 
         String expectedFeature = FileUtils.readFile(expectedPath);
         String actualFeature = FileUtils.readFile(featurePath);
         //todo need to match regex? of get zID and parse that in to assert against?
         Assert.assertEquals(actualFeature, expectedFeature);
     }
-
 
     @Given("^I have a feature file with a mix of zephyr and non zephyr scenarios$")
     public void iHaveAFeatureFileWithAMixOfZephyrAndNonZephyrScenarios() throws Throwable {

@@ -79,7 +79,7 @@ public class Execution {
      */
     public void update(int status, String comment, String... attachments) {
 
-        if (idList.size() == 0) {
+        if (idList.isEmpty()) {
             logger.info("FAILED [{}] - Issue not found", issue);
             StandaloneTool.setErrorsEncountered(true);
             return;

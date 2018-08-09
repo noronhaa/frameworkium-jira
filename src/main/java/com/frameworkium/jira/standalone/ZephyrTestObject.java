@@ -2,6 +2,7 @@ package com.frameworkium.jira.standalone;
 
 import com.frameworkium.jira.JiraConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,12 +48,7 @@ public class ZephyrTestObject {
 
     @Override
     public String toString() {
-        return "ZephyrTestObject{" +
-                "key='" + key + '\'' +
-                ", status=" + status +
-                ", comment='" + comment + '\'' +
-                ", attachment='" + attachment + '\'' +
-                '}';
+        return ReflectionToStringBuilder.toString(this);
     }
 
     /**

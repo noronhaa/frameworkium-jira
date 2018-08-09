@@ -52,7 +52,7 @@ public class GherkinUtils {
                 .map(PickleTag::getName)
                 .filter(pickleTag -> pickleTag.startsWith(JiraConfig.ZEPHYR_TAG_PREFIX))
                 .map(GherkinUtils::stripZephyrTag)
-                .filter(tag -> new Issue(tag).found())
+                .filter(tag -> new Issue(tag).exists())
                 .findFirst();
     }
 

@@ -48,7 +48,7 @@ public class JiraConfig {
         _3_MEDIUM("2"),
         _4_LOW("3"),
         UNCATEGORISED("6");
-        public String value;
+        public final String value;
 
         Priority(String priority) {
             this.value = priority;
@@ -63,7 +63,7 @@ public class JiraConfig {
         TEST("Test"),
         TASK("Task");
 
-        private String name;
+        private final String name;
 
         IssueType(String task) {
             name = task;

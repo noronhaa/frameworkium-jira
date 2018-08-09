@@ -15,35 +15,6 @@ public class FileUtils {
             throw new IllegalStateException(e);
         }
     }
-    /**
-     * Read contents of file and return as a String
-     *
-     * @param pathname path to file to read
-     * @return file as String
-     */
-    public static String readFile(String pathname) {
-        File file = new File(pathname);
-        StringBuilder fileContents = new StringBuilder((int) file.length());
-        Scanner scanner = null;
-
-        try {
-            scanner = new Scanner(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        String lineSeparator = System.getProperty("line.separator");
-
-        try {
-            while (scanner.hasNextLine()) {
-                fileContents.append(scanner.nextLine());
-                fileContents.append(lineSeparator);
-            }
-            return fileContents.toString();
-        } finally {
-            scanner.close();
-        }
-    }
 
     /**
      * Either take a single file or recursively searches a directory collecting

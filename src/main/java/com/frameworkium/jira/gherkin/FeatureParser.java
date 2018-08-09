@@ -37,10 +37,6 @@ public class FeatureParser {
 
     private Path featurePath;
 
-    public List<Pickle> getPickles() {
-        return pickles;
-    }
-
     private List<Pickle> pickles;
 
     public FeatureParser(Path featurePath) {
@@ -60,9 +56,13 @@ public class FeatureParser {
         return new Compiler().compile(gherkinDocument);
     }
 
+    public List<Pickle> getPickles() {
+        return pickles;
+    }
+
 //    /**
 //     * Filter all Scenario that do not have an existing Zephyr test tag or do not have the @NoZephyr tag, then create
-//     * a test case in Zpehyr for each Scenario. For the ID of the new Zephyr test case add a corresponding cucumber tag
+//     * a test case in Zephyr for each Scenario. For the ID of the new Zephyr test case add a corresponding cucumber tag
 //     * to the original cucumber Scenario
 //     */
 //    public void syncTestsWithZephyr(){
@@ -78,7 +78,7 @@ public class FeatureParser {
     /**
      * Splits the Feature into Scenarios with Zephyr tags and Scenarios without. Scenarios with a zephyr file will have
      * the Zephyr Test case updated in case there have been any changes or edits. Scenarios without a zephyr tag will
-     * have a new Zepyhr test case created AND the the ID of the new Zephyr test case will be added to the corresponding
+     * have a new Zephyr test case created AND the the ID of the new Zephyr test case will be added to the corresponding
      * Scenario as a cucumber test. Scenarios with the @NoZephyr tag will not have a Zephyr test case created.
      */
     public void syncTestsWithZephyr() {

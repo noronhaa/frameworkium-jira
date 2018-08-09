@@ -9,7 +9,8 @@ import org.json.*;
 import static com.frameworkium.jira.JiraConfig.JIRA_REST_PATH;
 
 /**
- * This class is modeled for using a normal Jira Issue as a test case. This is NOT the same as a Zephyr Test
+ * This class is modeled for using a normal Jira Issue as a test case.
+ * This is NOT the same as a Zephyr Test
  */
 public class JiraTest {
 
@@ -51,17 +52,19 @@ public class JiraTest {
     }
 
     /**
-     * Generic method to change a field as different field will require different json bodies,
-     * create your own json object to update a field and parse into this wrapper method
+     * Generic method to change a field as different field will require
+     * different json bodies, create your own json object to update a field
+     * and parse into this wrapper method
      *
      * @param issueKey   key of the JIRA ticket you want to update
-     * @param jsonObject the json object representing the field you wish to change and new value
+     * @param jsonObject the json object representing the field you wish to
+     *                   change and new value
      * @return response object from request
      */
     public static Response changeIssueFieldValue(
             String issueKey, JSONObject jsonObject) {
 
-        Response response = null;
+        Response response;
 
         try {
             response = JiraConfig.getJIRARequestSpec()
@@ -71,6 +74,7 @@ public class JiraTest {
                     .put(JIRA_REST_PATH + ISSUE_PATH + issueKey);
         } catch (JSONException e) {
             logger.error("Can't create JSON Object for test case result update", e);
+            throw new IllegalStateException(e);
         }
 
         return response;

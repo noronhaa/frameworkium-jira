@@ -28,31 +28,18 @@ public class Steps {
     private static final String DESCRIPTION_TEXT = "Issue for testing Automation interaction with JIRA API ";
 
     private Issue issue = new Issue(tickets[1]);
-    private List<String> attachmentIds = null;
     private SearchIssues searchIssues = null;
     private String summary = null;
 
     private static final String resultVersion = "MSS Automation";
 
-//    @Before //for debugging
-//    public void setupConnectionCredentials(){
-//        System.out.println("before");
-//        System.setProperty("jiraURL","");
-//        System.setProperty("jiraUsername","");
-//        System.setProperty("jiraPassword","");
-//        System.setProperty("resultVersion",resultVersion);
-//        System.setProperty("zapiCycleRegEx","dummy cycle");
-//    }
-
-
     @After("@JiraTransition")
-    public void resetJiraTransisiton() {
+    public void resetJiraTransition() {
         JiraTest.transitionIssue(ticket, "Rejected");
     }
 
-
     @Given("^I have the details of '(\\d+)' JIRA ticket\\(s\\)$")
-    public void iHaveTheDetailsOfJIRATicketS(int tickets) throws Throwable {
+    public void iHaveTheDetailsOfJIRATicketS(int tickets) {
         Arrays.stream(this.tickets).forEach(t -> {
                     int status = JiraConfig.getJIRARequestSpec()
                             .get(JiraConfig.JIRA_REST_PATH + "issue/" + t)
@@ -66,13 +53,13 @@ public class Steps {
     }
 
     @When("^I link the 2 tickets by '(.*)'$")
-    public void iLinkTheTicketsByIsBlockedBy(String linkOption) throws Throwable {
+    public void iLinkTheTicketsByIsBlockedBy(String linkOption) {
         Issue issue = new Issue(tickets[0]);
         response = issue.linkIssues(linkOption, tickets[0], tickets[1]);
     }
 
     @Then("^I will get a 2XX response$")
-    public void iWillGetA2XXResponse() throws Throwable {
+    public void iWillGetA2XXResponse() {
         String statusCode = String.valueOf(response.statusCode());
 
         Assert.assertTrue(statusCode.startsWith("2"),
@@ -80,7 +67,7 @@ public class Steps {
     }
 
     @Then("^all the responses be a 2XX$")
-    public void allTheResponsesBeAXX() throws Throwable {
+    public void allTheResponsesBeAXX() {
         this.responses.stream()
                 .map(ResponseOptions::statusCode)
                 .map(Object::toString)
@@ -88,54 +75,53 @@ public class Steps {
                         Assert.assertTrue(r.startsWith("2"), r));
     }
 
-
     @When("^I add an attachment$")
-    public void iAddAnAttachment() throws Throwable {
+    public void iAddAnAttachment() {
         response = issue.addAttachment(new File("src/test/resources/attachment.txt"));
     }
 
     @When("^I change the '(.*)' field$")
-    public void iChangeTheDescriptionField(String field) throws Throwable {
+    public void iChangeTheDescriptionField(String field) {
         response = JiraTest.changeIssueFieldValue(ticket, field, DESCRIPTION_TEXT + RandomStringUtils.randomAscii(5));
     }
 
     @When("^I leave a comment on a Jira ticket$")
-    public void iLeaveACommentOnAJiraTicket() throws Throwable {
+    public void iLeaveACommentOnAJiraTicket() {
         response = JiraTest.addComment(ticket, "test comment");
     }
 
     @When("^I change the ticket to '(.*)'$")
-    public void iChangeTheTicketToReady(String transition) throws Throwable {
+    public void iChangeTheTicketToReady(String transition) {
         response = JiraTest.transitionIssue(ticket, transition);
     }
 
 
     @And("^I can find the ticket by querying$")
-    public void iCanFindTheTicketByQuerying() throws Throwable {
+    public void iCanFindTheTicketByQuerying() {
         searchIssues = new SearchIssues("key = " + ticket);
     }
 
     @Then("^I can get the keys for the Issue$")
-    public void iCanGetTheKeysForTheIssue() throws Throwable {
+    public void iCanGetTheKeysForTheIssue() {
         searchIssues.getKeys();
     }
 
     @And("^I can get the Summaries for the Issue$")
-    public void iCanGetTheSummariesForTheIssue() throws Throwable {
+    public void iCanGetTheSummariesForTheIssue() {
         List<String> summaries = searchIssues.getSummaries();
         summary = summaries.get(0);
     }
 
     @And("^I can get the Key for a Summary$")
-    public void iCanGetTheKeyForASummary() throws Throwable {
+    public void iCanGetTheKeyForASummary() {
         searchIssues.getKeyForSummary(summary);
     }
 
 
-    //ZAPHYR
+    //ZEPHYR
 
     @Given("^I have zephyr details for a Test Case$")
-    public void iHaveZephyrDetailsForATestCase() throws Throwable {
+    public void iHaveZephyrDetailsForATestCase() {
         int status = JiraConfig.getJIRARequestSpec()
                 .get(JiraConfig.JIRA_REST_PATH + "issue/" + testCase)
                 .thenReturn()
@@ -146,38 +132,30 @@ public class Steps {
     }
 
     @When("^I change the status to '(.*)'$")
-    public void iChangeTheStatusToStatus(String status) throws Throwable {
+    public void iChangeTheStatusToStatus(String status) {
         new Execution(testCase).update(parseStatus(status), "");
 
     }
 
     private int parseStatus(String status) {
 
-        int status2 = 0;
         switch (status) {
             case "pass":
-                status2 = JiraConfig.ZapiStatus.ZAPI_STATUS_PASS;
-                break;
+                return JiraConfig.ZapiStatus.ZAPI_STATUS_PASS;
             case "fail":
-                status2 = JiraConfig.ZapiStatus.ZAPI_STATUS_FAIL;
-                break;
+                return JiraConfig.ZapiStatus.ZAPI_STATUS_FAIL;
             case "blocked":
-                status2 = JiraConfig.ZapiStatus.ZAPI_STATUS_BLOCKED;
-                break;
+                return JiraConfig.ZapiStatus.ZAPI_STATUS_BLOCKED;
             case "wip":
-                status2 = JiraConfig.ZapiStatus.ZAPI_STATUS_WIP;
-                break;
+                return JiraConfig.ZapiStatus.ZAPI_STATUS_WIP;
             default:
                 throw new RuntimeException("status not found");
-
         }
-
-        return status2;
     }
 
 
     @Then("^the status will be '(.*)'$")
-    public void theStatusWillBeStatus(String status) throws Throwable {
+    public void theStatusWillBeStatus(String status) {
         Assert.assertEquals(
                 parseStatus(status),
                 new Execution(testCase).getExecutionStatus()
@@ -186,7 +164,7 @@ public class Steps {
 
 
     @When("^I add '(.*)' attachments$")
-    public void iChangeTheStatusToFailAndLeaveAttachmentsAttachment(String attachments) throws Throwable {
+    public void iChangeTheStatusToFailAndLeaveAttachmentsAttachment(String attachments) throws ReflectiveOperationException {
         int attach = Integer.valueOf(attachments);
         String attachmentz[];
         if (attach == 1) {
@@ -210,7 +188,7 @@ public class Steps {
 
 
     @When("^I add delete attachments$")
-    public void iAddDeleteAttachments() throws Throwable {
+    public void iAddDeleteAttachments() throws ReflectiveOperationException {
         Execution execution = new Execution(testCase);
         Field idListField = Execution.class.getDeclaredField("idList");
         idListField.setAccessible(true);
@@ -225,7 +203,7 @@ public class Steps {
     private SearchExecutions searchExecutions;
 
     @When("^I search for a test execution cycle$")
-    public void iSearchForAnTestExecutionCycle() throws Throwable {
+    public void iSearchForAnTestExecutionCycle() throws ReflectiveOperationException {
         String query = String.format("issue='%s' and fixVersion='%s'",
                 testCase, resultVersion);
         this.searchExecutions = new SearchExecutions(query);
@@ -241,7 +219,7 @@ public class Steps {
 
 
     @Then("^I can get the '(.*)' for the execution$")
-    public void iCanGetTheIdForTheExecution(String var) throws Throwable {
+    public void iCanGetTheIdForTheExecution(String var) {
         List<Integer> list;
 
         if ("id".equals(var)) {
@@ -258,7 +236,7 @@ public class Steps {
 
 
     @When("^I 'run' the tests$")
-    public void iRunTheTests() throws Throwable {
+    public void iRunTheTests() {
         System.out.println("Pretend tests are running...)");
     }
 }
