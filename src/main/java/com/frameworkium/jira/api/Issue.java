@@ -33,30 +33,28 @@ public class Issue {
                 .delete(endpoint);
     }
 
-
     /**
      * Checks if the Issue exists
      *
      * @return true is the issue exists
      */
-    public boolean found() {
+    public boolean exists() {
 
         String endpoint = JiraConfig.JIRA_REST_PATH + "search?jql=issue=" + this.issueKey;
 
-        int statuscode = JiraConfig.getJIRARequestSpec()
+        int statusCode = JiraConfig.getJIRARequestSpec()
                 .get(endpoint)
                 .statusCode();
 
-        if (statuscode == 200) {
+        if (statusCode == 200) {
             return true;
-        } else if (statuscode == 400) {
+        } else if (statusCode == 400) { // TODO: 400 is bad request, not "not found"
             return false;
         } else {
             throw new IllegalStateException(
-                    "unexpected status code, expected 200 (found) or 400 (not found) but got " + statuscode);
+                    "Unexpected status code, expected 200 (found) or 400 (not found) but got " + statusCode);
         }
     }
-
 
     /**
      * Create and post a JSON request to JIRA to get issues.
@@ -90,7 +88,6 @@ public class Issue {
                 .post(JiraConfig.JIRA_REST_PATH + "issueLink");
     }
 
-
     /** Adds the file attachment to the JIRA issue. */
     public Response addAttachment(File attachment) {
         String attachmentPath = String.format("issue/%s/attachments", this.issueKey);
@@ -101,7 +98,6 @@ public class Issue {
                 .when()
                 .post(JiraConfig.JIRA_REST_PATH + attachmentPath);
     }
-
 
     /**
      * Update a Zephyr Test Case. Puts bdd into 'description' field by default but can be overridden by jiraBddFieldKey
